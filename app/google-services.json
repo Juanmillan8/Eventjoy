@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "544752199717",
+    "firebase_url": "https://eventjoy-7a29e-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "eventjoy-7a29e",
+    "storage_bucket": "eventjoy-7a29e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:544752199717:android:e82cc91c9ce742cf6df7cc",
+        "android_client_info": {
+          "package_name": "com.example.eventjoy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "544752199717-9ffb6ilp6jr2j096ui3o1432mb0hulej.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.eventjoy",
+            "certificate_hash": "3662f0837bd2ab4526ee2bd41f0a6d3157d9be1c"
+          }
+        },
+        {
+          "client_id": "544752199717-0al48l8n9foo9g7dnmtb0js8v7o5t9hs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGx_bKL_7UKMvJZUvWGyqtBDqk4FQmLVc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "544752199717-0al48l8n9foo9g7dnmtb0js8v7o5t9hs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
