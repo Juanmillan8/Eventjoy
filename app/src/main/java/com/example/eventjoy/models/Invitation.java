@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public class Invitation extends DomainEntity{
 
-    private String invidedUserId;
+    private String invitedUserId;
     private String inviterUserId;
     private String groupId;
     private LocalDateTime invitedAt;
@@ -13,12 +13,12 @@ public class Invitation extends DomainEntity{
         super();
     }
 
-    public String getInvidedUserId() {
-        return invidedUserId;
+    public String getInvitedUserId() {
+        return invitedUserId;
     }
 
-    public void setInvidedUserId(String invidedUserId) {
-        this.invidedUserId = invidedUserId;
+    public void setInvitedUserId(String invitedUserId) {
+        this.invitedUserId = invitedUserId;
     }
 
     public String getInviterUserId() {
@@ -48,7 +48,7 @@ public class Invitation extends DomainEntity{
     @Override
     public String toString() {
         return "Invitation{" +
-                "invidedUserId='" + invidedUserId + '\'' +
+                "invitedUserId='" + invitedUserId + '\'' +
                 ", inviterUserId='" + inviterUserId + '\'' +
                 ", groupId='" + groupId + '\'' +
                 ", invitedAt=" + invitedAt +

@@ -13,7 +13,6 @@ public class Event extends DomainEntity{
     private int maxParticipants;
     private Address address;
     private EventStatus status;
-    private String idCreator;
     private String idGroup;
 
     public Event() {
@@ -76,14 +75,6 @@ public class Event extends DomainEntity{
         this.status = status;
     }
 
-    public String getIdCreator() {
-        return idCreator;
-    }
-
-    public void setIdCreator(String idCreator) {
-        this.idCreator = idCreator;
-    }
-
     public String getIdGroup() {
         return idGroup;
     }
@@ -102,7 +93,6 @@ public class Event extends DomainEntity{
                 ", maxParticipants=" + maxParticipants +
                 ", address=" + address +
                 ", status=" + status +
-                ", idCreator='" + idCreator + '\'' +
                 ", idGroup='" + idGroup + '\'' +
                 '}';
     }

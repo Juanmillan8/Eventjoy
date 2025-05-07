@@ -3,11 +3,20 @@ package com.example.eventjoy.models;
 public class UserEvent extends DomainEntity{
 
     private String userId;
-    private String groupId;
+    private String eventId;
+    private Boolean isCreator;
     private Boolean notificationsEnabled;
 
     public UserEvent() {
         super();
+    }
+
+    public Boolean getCreator() {
+        return isCreator;
+    }
+
+    public void setCreator(Boolean creator) {
+        isCreator = creator;
     }
 
     public String getUserId() {
@@ -18,12 +27,12 @@ public class UserEvent extends DomainEntity{
         this.userId = userId;
     }
 
-    public String getGroupId() {
-        return groupId;
+    public String getEventId() {
+        return eventId;
     }
 
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
     }
 
     public Boolean getNotificationsEnabled() {
@@ -38,7 +47,8 @@ public class UserEvent extends DomainEntity{
     public String toString() {
         return "UserEvent{" +
                 "userId='" + userId + '\'' +
-                ", groupId='" + groupId + '\'' +
+                ", eventId='" + eventId + '\'' +
+                ", isCreator=" + isCreator +
                 ", notificationsEnabled=" + notificationsEnabled +
                 '}';
     }

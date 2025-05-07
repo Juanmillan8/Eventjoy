@@ -6,4 +6,30 @@
     </style>
 
     <style name="Theme.Eventjoy" parent="Base.Theme.Eventjoy" />
+
+    <style name="CustomHintTextAppearance" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textColor">@color/black</item>
+        <item name="android:translationY">14dp</item>
+    </style>
+
+    <style name="roundedImageViewRounded">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="CustomTextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxBackgroundColor">#004d40</item> <!-- Fondo del input -->
+        <item name="boxStrokeColor">#ff6b6b</item>     <!-- Borde en error -->
+        <item name="errorTextColor">@color/errorRed</item>
+    </style>
+
+    <style name="CustomDialogStyle" parent="Theme.MaterialComponents.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:windowCloseOnTouchOutside">false</item>
+        <item name="android:backgroundDimAmount">0.6</item>
+    </style>
+
+
 </resources>

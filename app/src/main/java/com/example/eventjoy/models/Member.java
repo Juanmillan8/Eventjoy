@@ -8,7 +8,7 @@ public class Member extends Person{
 
     private String dni;
     private String phone;
-    private LocalDate birthdate;
+    private String birthdate;
     private String username;
     private int level;
     private Provider provider;
@@ -33,11 +33,11 @@ public class Member extends Person{
         this.phone = phone;
     }
 
-    public LocalDate getBirthdate() {
+    public String getBirthdate() {
         return birthdate;
     }
 
-    public void setBirthdate(LocalDate birthdate) {
+    public void setBirthdate(String birthdate) {
         this.birthdate = birthdate;
     }
 
@@ -70,7 +70,7 @@ public class Member extends Person{
         return "Member{" +
                 "dni='" + dni + '\'' +
                 ", phone='" + phone + '\'' +
-                ", birthdate=" + birthdate +
+                ", birthdate='" + birthdate + '\'' +
                 ", username='" + username + '\'' +
                 ", level=" + level +
                 ", provider=" + provider +
