@@ -2,7 +2,7 @@ package com.example.eventjoy.models;
 
 import com.example.eventjoy.enums.Role;
 
-public class Person extends DomainEntity{
+public abstract class Person extends DomainEntity{
 
     protected String name;
     protected String surname;

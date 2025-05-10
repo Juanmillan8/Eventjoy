@@ -3,6 +3,9 @@ package com.example.eventjoy.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -26,6 +29,10 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 public class MemberMainActivity extends AppCompatActivity {
 
     private Button btnLogout;
@@ -48,7 +55,6 @@ public class MemberMainActivity extends AppCompatActivity {
         });
 
         loadServices();
-        Log.i("1", "1");
         loadComponents();
 
         btnLogout.setOnClickListener(new View.OnClickListener() {
@@ -70,31 +76,26 @@ public class MemberMainActivity extends AppCompatActivity {
         startActivity(mainIntent);
     }
 
+    private void loadProfileIcon(String filename, ImageView imageView, Context context) {
+        File directory = context.getFilesDir(); // /data/data/tu.app.package/files/
+        File imageFile = new File(directory, filename);
+        Picasso.get().load(imageFile).into(imageView);
+    }
 
-    private void loadComponents(){
+    private void loadComponents() {
         profileIcon = findViewById(R.id.profileIcon);
         sharedPreferences = getSharedPreferences("EventjoyPreferences", Context.MODE_PRIVATE);
-        editor = sharedPreferences.edit();
         btnLogout = findViewById(R.id.btnLogout);
         mAuth = FirebaseAuth.getInstance();
-        Log.i("2", "2");
+
         memberService.getMemberById(sharedPreferences.getString("id", ""), new OnSuccessListener<Member>() {
             @Override
             public void onSuccess(Member memberGet) {
-                Log.i("3", "3");
                 member = memberGet;
 
-                if(member!=null){
-                    Log.i("NONUL", "NONUL");
-                }else{
-                    Log.i("NUL", "NUL");
+                if (member.getPhoto() != null) {
+                    loadProfileIcon(member.getPhoto(), profileIcon, getApplicationContext());
                 }
-
-                if(member.getPhoto()!=null){
-                    Log.i("4", "4");
-                    Picasso.get().load(Uri.parse(member.getPhoto())).into(profileIcon);
-                }
-                Log.i("5", "5");
             }
         }, new OnFailureListener() {
             @Override
@@ -104,7 +105,7 @@ public class MemberMainActivity extends AppCompatActivity {
         });
     }
 
-    private void loadServices(){
+    private void loadServices() {
         memberService = new MemberService(getApplicationContext());
     }
 

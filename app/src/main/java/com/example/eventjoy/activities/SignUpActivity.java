@@ -6,11 +6,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -20,12 +25,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.motion.widget.MotionLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -46,13 +54,19 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.Logger;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.squareup.picasso.Picasso;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
@@ -63,9 +77,9 @@ public class SignUpActivity extends AppCompatActivity {
     private Toolbar toolbarActivity;
     private LinearLayout linearLayoutSignUp;
     private LockableScrollView scrollViewSignUp;
-    private ImageView ivSwipeDown, ivSwipeUp, profileIcon;
+    private ImageView ivSwipeDown, ivSwipeUp, profileIcon, btnDeleteImage, btnCamera;
     private MotionLayout motionLayout;
-    private TextView tvLogin;
+    private TextView tvLogin, tvPassword;
     private TextInputEditText textInputEditTextName, textInputEditTextSurname, textInputEditTextUsername, textInputEditTextDni, textInputEditTextPhone, textInputEditTextBirthdate, textInputEditTextEmail, textInputEditTextPassword;
     private Button btnRegister;
     private FirebaseAuth mAuth;
@@ -77,6 +91,13 @@ public class SignUpActivity extends AppCompatActivity {
     private ProgressDialogFragment progressDialog;
     private static final int PICK_IMAGE_REQUEST = 0;
     private Uri mImageUri;
+    private Boolean error;
+    private FirebaseUser user;
+    private TextInputLayout textInputLayoutPassword;
+    private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
+    private ActivityResultLauncher<Intent> cameraLauncher;
+    private Boolean changedImage;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,10 +134,29 @@ public class SignUpActivity extends AppCompatActivity {
             }
         });
 
+        btnDeleteImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                changedImage = false;
+                profileIcon.setImageResource(R.drawable.default_profile_photo);
+            }
+        });
+
         btnRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 verifications();
+            }
+        });
+
+        btnCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (checkCameraPermission()) {
+                    openCamera();
+                } else {
+                    requestCameraPermission();
+                }
             }
         });
 
@@ -155,15 +195,42 @@ public class SignUpActivity extends AppCompatActivity {
                     scrollViewSignUp.setScrollingEnabled(true);
                 }
             }
+
             @Override
             public void onTransitionTrigger(MotionLayout motionLayout, int triggerId, boolean positive, float progress) {
             }
         });
 
+        cameraLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                Bundle extras = result.getData().getExtras();
+                Bitmap imageBitmap = (Bitmap) extras.get("data");
+                profileIcon.setImageBitmap(imageBitmap);
+                changedImage=true;
+            } else {
+                Toast.makeText(this, "No se pudo obtener la imagen", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+    }
+
+    private void openCamera() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            cameraLauncher.launch(intent);
+        }
+    }
+
+    private boolean checkCameraPermission() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestCameraPermission() {
+        requestPermissions(new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_REQUEST_CODE);
     }
 
     private void verifications() {
-        if (textInputEditTextName.getText().toString().isBlank() || textInputEditTextPassword.getText().toString().isBlank() || textInputEditTextEmail.getText().toString().isBlank() || textInputEditTextUsername.getText().toString().isBlank() || textInputEditTextBirthdate.getText().toString().isBlank() || textInputEditTextDni.getText().toString().isBlank()) {
+        if (textInputEditTextName.getText().toString().isBlank() || (textInputEditTextPassword.getText().toString().isBlank() && textInputLayoutPassword.getVisibility() == View.VISIBLE) || textInputEditTextEmail.getText().toString().isBlank() || textInputEditTextUsername.getText().toString().isBlank() || textInputEditTextBirthdate.getText().toString().isBlank() || textInputEditTextDni.getText().toString().isBlank()) {
             Toast.makeText(getApplicationContext(), "You must fill out all the required fields", Toast.LENGTH_LONG).show();
         } else if (textInputEditTextName.getText().toString().length() > 20) {
             Toast.makeText(getApplicationContext(), "The name must have a maximum of 20 characters", Toast.LENGTH_LONG).show();
@@ -172,11 +239,11 @@ public class SignUpActivity extends AppCompatActivity {
             String formattedToday = LocalDate.now().format(formatterDate);
             LocalDate today = LocalDate.parse(formattedToday, formatterDate);
 
-            if(birthdate.isAfter(today)){
+            if (birthdate.isAfter(today)) {
                 Toast.makeText(getApplicationContext(), "Date of birth cannot be later than the current date", Toast.LENGTH_LONG).show();
-            }else if(Period.between(birthdate, today).getYears()<12){
+            } else if (Period.between(birthdate, today).getYears() < 12) {
                 Toast.makeText(getApplicationContext(), "The minimum age to access the platform is 12 years old", Toast.LENGTH_LONG).show();
-            }else{
+            } else {
                 initializeDialog();
 
                 memberService.checkRepeatedDNI(textInputEditTextDni.getText().toString(), new OnSuccessListener<String>() {
@@ -184,14 +251,14 @@ public class SignUpActivity extends AppCompatActivity {
                     public void onSuccess(String exist) {
                         if (exist == "true") {
                             progressDialog.dismiss();
-                            Toast.makeText(getApplicationContext(),"The DNI " + textInputEditTextDni.getText().toString() + " is already registered, try a different one", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getApplicationContext(), "The DNI " + textInputEditTextDni.getText().toString() + " is already registered, try a different one", Toast.LENGTH_LONG).show();
                         } else {
                             memberService.checkRepeatedUsername(textInputEditTextUsername.getText().toString(), new OnSuccessListener<String>() {
                                 @Override
                                 public void onSuccess(String exist) {
                                     if (exist == "true") {
                                         progressDialog.dismiss();
-                                        Toast.makeText(getApplicationContext(),"The username " + textInputEditTextUsername.getText().toString() + " is already registered, try a different one", Toast.LENGTH_LONG).show();
+                                        Toast.makeText(getApplicationContext(), "The username " + textInputEditTextUsername.getText().toString() + " is already registered, try a different one", Toast.LENGTH_LONG).show();
                                     } else {
                                         signUpMember();
                                     }
@@ -225,57 +292,57 @@ public class SignUpActivity extends AppCompatActivity {
         m.setPhone(textInputEditTextPhone.getText().toString());
         m.setUsername(textInputEditTextUsername.getText().toString());
         m.setSurname(textInputEditTextSurname.getText().toString());
-        m.setProvider(Provider.EMAIL);
         m.setRole(Role.MEMBER);
         m.setBirthdate(textInputEditTextBirthdate.getText().toString());
         m.setName(textInputEditTextName.getText().toString());
-        m.setPhoto(mImageUri.toString());
 
-        mAuth.createUserWithEmailAndPassword(textInputEditTextEmail.getText().toString(), textInputEditTextPassword.getText().toString()).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if (task.isSuccessful()) {
-                    insertMember(m);
-                }
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                progressDialog.dismiss();
-                if (e instanceof FirebaseAuthException) {
-                    FirebaseAuthException authException = (FirebaseAuthException) e;
-                    String errorCode = authException.getErrorCode();
-
-                    switch (errorCode) {
-                        case "ERROR_WEAK_PASSWORD":
-                            Toast.makeText(getApplicationContext(), "The password is too weak, please choose a stronger password", Toast.LENGTH_LONG).show();
-                            break;
-                        case "ERROR_INVALID_EMAIL":
-                            Toast.makeText(getApplicationContext(),"The email is in an invalid format, please enter a valid email", Toast.LENGTH_LONG).show();
-                            break;
-                        case "ERROR_EMAIL_ALREADY_IN_USE":
-                            Toast.makeText(getApplicationContext(),"The email " + textInputEditTextEmail.getText().toString() + " is already registered in another account", Toast.LENGTH_LONG).show();
-                            break;
-                        case "ERROR_NETWORK_REQUEST_FAILED":
-                            Toast.makeText(getApplicationContext(),"A network error (such as timeout, interrupted connection or unreachable host) has occurred.", Toast.LENGTH_LONG).show();
-                            break;
-                        default:
-                            Toast.makeText(getApplicationContext(),"Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        if (user == null) {
+            mAuth.createUserWithEmailAndPassword(textInputEditTextEmail.getText().toString(), textInputEditTextPassword.getText().toString()).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    if (task.isSuccessful()) {
+                        m.setProvider(Provider.EMAIL);
+                        insertMember(m);
                     }
-                } else {
-                    Toast.makeText(getApplicationContext(),"Failed registration: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 }
-            }
-        });
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    progressDialog.dismiss();
+                    if (e instanceof FirebaseAuthException) {
+                        FirebaseAuthException authException = (FirebaseAuthException) e;
+                        String errorCode = authException.getErrorCode();
 
+                        switch (errorCode) {
+                            case "ERROR_WEAK_PASSWORD":
+                                Toast.makeText(getApplicationContext(), "The password is too weak, please choose a stronger password", Toast.LENGTH_LONG).show();
+                                break;
+                            case "ERROR_INVALID_EMAIL":
+                                Toast.makeText(getApplicationContext(), "The email is in an invalid format, please enter a valid email", Toast.LENGTH_LONG).show();
+                                break;
+                            case "ERROR_EMAIL_ALREADY_IN_USE":
+                                Toast.makeText(getApplicationContext(), "The email " + textInputEditTextEmail.getText().toString() + " is already registered in another account", Toast.LENGTH_LONG).show();
+                                break;
+                            case "ERROR_NETWORK_REQUEST_FAILED":
+                                Toast.makeText(getApplicationContext(), "A network error (such as timeout, interrupted connection or unreachable host) has occurred.", Toast.LENGTH_LONG).show();
+                                break;
+                            default:
+                                Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Failed registration: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+        } else {
+            m.setProvider(Provider.GOOGLE);
+            insertMember(m);
+        }
     }
 
     public void permissionsCheck() {
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
             return;
         }
     }
@@ -302,10 +369,14 @@ public class SignUpActivity extends AppCompatActivity {
                 editor.putString("role", Role.MEMBER.name());
                 editor.putString("id", id);
                 editor.apply();
-                Toast.makeText(getApplicationContext(), "Member successfully registered", Toast.LENGTH_SHORT).show();
-                progressDialog.dismiss();
-                Intent memberMainIntent = new Intent(getApplicationContext(), MemberMainActivity.class);
-                startActivity(memberMainIntent);
+                if (changedImage) {
+                    saveProfileImage(m, profileIcon, "profileIcon_" + id, getApplicationContext());
+                } else {
+                    Toast.makeText(getApplicationContext(), "Member successfully registered", Toast.LENGTH_SHORT).show();
+                    progressDialog.dismiss();
+                    Intent memberMainIntent = new Intent(getApplicationContext(), MemberMainActivity.class);
+                    startActivity(memberMainIntent);
+                }
             }
         }, new OnFailureListener() {
             @Override
@@ -316,17 +387,49 @@ public class SignUpActivity extends AppCompatActivity {
         });
     }
 
-    private void initializeDialog(){
+    private void initializeDialog() {
         progressDialog = new ProgressDialogFragment();
         progressDialog.setCancelable(false);
         progressDialog.show(getSupportFragmentManager(), "progressDialog");
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.toolbar_sign_out_menu, menu);
+        if (user != null) {
+            MenuItem actionIcon = menu.findItem(R.id.logout_icon);
+            actionIcon.setVisible(true);
+        }
+        return true;
+    }
+
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Intent mainActivityIntent = new Intent(this, MainActivity.class);
-        startActivity(mainActivityIntent);
-        finish();
+        if (item.getItemId() == android.R.id.home) {
+            if (user != null) {
+                Toast.makeText(getApplicationContext(), "You must log out before returning to the main screen", Toast.LENGTH_SHORT).show();
+            } else {
+                Intent mainActivityIntent = new Intent(this, MainActivity.class);
+                startActivity(mainActivityIntent);
+            }
+        } else {
+            mAuth.signOut();
+            Intent mainIntent = new Intent(this, MainActivity.class);
+            startActivity(mainIntent);
+        }
+        return true;
+    }
+
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
+            if (user != null) {
+                Toast.makeText(getApplicationContext(), "You must log out before returning to the main screen", Toast.LENGTH_SHORT).show();
+            } else {
+                Intent mainActivityIntent = new Intent(this, MainActivity.class);
+                startActivity(mainActivityIntent);
+            }
+        }
         return true;
     }
 
@@ -336,29 +439,65 @@ public class SignUpActivity extends AppCompatActivity {
         if (requestCode == PICK_IMAGE_REQUEST) {
             if (resultCode == RESULT_OK) {
                 if (data != null) {
-                    mImageUri=data.getData();
-                    SharedPreferences preferences= PreferenceManager.getDefaultSharedPreferences(this);
-                    SharedPreferences.Editor editor=preferences.edit();
-                    editor.putString("image", String.valueOf(mImageUri));
-                    editor.commit();
+                    mImageUri = data.getData();
                     profileIcon.setImageURI(mImageUri);
-                    profileIcon.invalidate();
+                    changedImage=true;
                 }
             }
         }
     }
 
+    private void saveProfileImage(Member m, ImageView imageView, String filename, Context context) {
+        Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+        error = false;
+        File directory = context.getFilesDir();
+        File imageFile = new File(directory, filename);
+        FileOutputStream fos = null;
+
+        m.setPhoto(filename);
+
+        try {
+            fos = new FileOutputStream(imageFile);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+            fos.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(context, "Error saving profile picture", Toast.LENGTH_SHORT).show();
+            error = true;
+        } finally {
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (!error) {
+                memberService.updateMember(m);
+            }
+            Toast.makeText(getApplicationContext(), "Member successfully registered", Toast.LENGTH_SHORT).show();
+            progressDialog.dismiss();
+            Intent memberMainIntent = new Intent(getApplicationContext(), MemberMainActivity.class);
+            startActivity(memberMainIntent);
+        }
+    }
+
     private void loadComponents() {
+        changedImage = false;
+        tvPassword = findViewById(R.id.tvPassword);
         formatterDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         sharedPreferences = getSharedPreferences("EventjoyPreferences", Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
         mAuth = FirebaseAuth.getInstance();
         profileIcon = findViewById(R.id.profileIcon);
+        btnDeleteImage = findViewById(R.id.btnDeleteImage);
         textInputEditTextPassword = findViewById(R.id.textInputEditTextPassword);
         textInputEditTextEmail = findViewById(R.id.textInputEditTextEmail);
         textInputEditTextBirthdate = findViewById(R.id.textInputEditTextBirthdate);
         textInputEditTextPhone = findViewById(R.id.textInputEditTextPhone);
         textInputEditTextDni = findViewById(R.id.textInputEditTextDni);
+        btnCamera = findViewById(R.id.btnCamera);
         textInputEditTextUsername = findViewById(R.id.textInputEditTextUsername);
         textInputEditTextSurname = findViewById(R.id.textInputEditTextSurname);
         textInputEditTextName = findViewById(R.id.textInputEditTextName);
@@ -373,13 +512,29 @@ public class SignUpActivity extends AppCompatActivity {
         scrollViewSignUp.setScrollingEnabled(false);
         ivSwipeDown = findViewById(R.id.ivSwipeDown);
         motionLayout = findViewById(R.id.main);
-
+        user = mAuth.getCurrentUser();
+        textInputLayoutPassword = findViewById(R.id.textInputLayoutPassword);
 
 
         ivSwipeUp.setOnClickListener(v -> {
             motionLayout.transitionToEnd();
             ivSwipeUp.setOnClickListener(null);
         });
+
+
+        if (user != null) {
+            textInputEditTextEmail.setText(user.getEmail());
+            textInputEditTextEmail.setEnabled(false);
+            textInputEditTextName.setText(user.getDisplayName());
+            textInputEditTextPhone.setText(user.getPhoneNumber());
+            textInputLayoutPassword.setVisibility(View.GONE);
+            tvPassword.setVisibility(View.GONE);
+
+            if (user.getPhotoUrl() != null) {
+                Picasso.get().load(Uri.parse(String.valueOf(user.getPhotoUrl()))).into(profileIcon);
+                changedImage = true;
+            }
+        }
     }
 
     private void loadServices() {

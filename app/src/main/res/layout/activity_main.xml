@@ -51,6 +51,7 @@
             android:text="Email *"
             android:textColor="@color/white"
             android:textSize="16sp" />
+
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="350dp"
             android:layout_height="wrap_content"
@@ -68,6 +69,7 @@
             app:hintEnabled="false">
 
         <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/textInputEditTextEmail"
             android:hint="Enter your email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -105,8 +107,8 @@
             app:endIconMode="password_toggle">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:hint="Enter your password"
                 android:id="@+id/textInputEditTextPassword"
+                android:hint="Enter your password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPassword"
