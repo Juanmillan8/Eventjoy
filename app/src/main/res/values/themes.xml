@@ -1,8 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.Eventjoy" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/mediumGreen</item>
     </style>
 
     <style name="Theme.Eventjoy" parent="Base.Theme.Eventjoy" />
@@ -30,6 +29,31 @@
         <item name="android:windowCloseOnTouchOutside">false</item>
         <item name="android:backgroundDimAmount">0.6</item>
     </style>
+
+    <style name="Theme.Eventjoy.Dialog.NoActionBar" parent="Theme.AppCompat.Light.Dialog">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.Eventjoy.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="Base.Theme.Eventjoy.ThemePopup" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/mediumGreen</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowCloseOnTouchOutside">true</item>
+        <item name="textInputStyle">@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox
+        </item>
+        <item name="editTextStyle">@style/Widget.MaterialComponents.TextInputEditText.OutlinedBox
+        </item>
+    </style>
+
+    <style name="Theme.Eventjoy.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="Theme.Eventjoy.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
 
 </resources>

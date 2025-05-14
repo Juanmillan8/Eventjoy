@@ -11,9 +11,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,7 +31,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.motion.widget.MotionLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -55,22 +52,16 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.Logger;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
-import java.util.HashMap;
 
 public class SignUpActivity extends AppCompatActivity {
 
@@ -208,7 +199,7 @@ public class SignUpActivity extends AppCompatActivity {
                 profileIcon.setImageBitmap(imageBitmap);
                 changedImage=true;
             } else {
-                Toast.makeText(this, "No se pudo obtener la imagen", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "The image could not be obtained", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -246,20 +237,20 @@ public class SignUpActivity extends AppCompatActivity {
             } else {
                 initializeDialog();
 
-                memberService.checkRepeatedDNI(textInputEditTextDni.getText().toString(), new OnSuccessListener<String>() {
+                memberService.checkRepeatedDNI(textInputEditTextDni.getText().toString(), new OnSuccessListener<QuerySnapshot>() {
                     @Override
-                    public void onSuccess(String exist) {
-                        if (exist == "true") {
+                    public void onSuccess(QuerySnapshot snapshot) {
+                        if (!snapshot.isEmpty()) {
                             progressDialog.dismiss();
                             Toast.makeText(getApplicationContext(), "The DNI " + textInputEditTextDni.getText().toString() + " is already registered, try a different one", Toast.LENGTH_LONG).show();
                         } else {
-                            memberService.checkRepeatedUsername(textInputEditTextUsername.getText().toString(), new OnSuccessListener<String>() {
+                            memberService.checkRepeatedUsername(textInputEditTextUsername.getText().toString(), new OnSuccessListener<QuerySnapshot>() {
                                 @Override
-                                public void onSuccess(String exist) {
-                                    if (exist == "true") {
+                                public void onSuccess(QuerySnapshot snapshot) {
+                                    if (!snapshot.isEmpty()) {
                                         progressDialog.dismiss();
                                         Toast.makeText(getApplicationContext(), "The username " + textInputEditTextUsername.getText().toString() + " is already registered, try a different one", Toast.LENGTH_LONG).show();
-                                    } else {
+                                    }else{
                                         signUpMember();
                                     }
                                 }
@@ -267,7 +258,7 @@ public class SignUpActivity extends AppCompatActivity {
                                 @Override
                                 public void onFailure(@NonNull Exception e) {
                                     progressDialog.dismiss();
-                                    Toast.makeText(getApplicationContext(), "Error querying database " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                    Toast.makeText(getApplicationContext(), "Error querying Firestore: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                                 }
                             });
                         }

@@ -316,7 +316,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="Enter your phone number"
-                        android:inputType="text"
+                        android:inputType="phone"
                         android:textColor="@color/black" />
                 </com.google.android.material.textfield.TextInputLayout>
 

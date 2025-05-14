@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/member_navigation"
+    app:startDestination="@+id/homeMemberFragment">
+
+    <fragment
+        android:id="@+id/homeMemberFragment"
+        android:name="com.example.eventjoy.fragments.HomeMemberFragment"
+        android:label="@string/menu_home"
+        tools:layout="@layout/fragment_home_member" />
+    <fragment
+        android:id="@+id/detailsMemberFragment"
+        android:name="com.example.eventjoy.fragments.DetailsMemberFragment"
+        android:label="Your account"
+        tools:layout="@layout/fragment_details_member" />
+</navigation>

@@ -22,8 +22,24 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Eventjoy">
         <activity
-            android:name=".activities.MemberMainActivity"
+            android:name=".activities.PopupReauthenticateActivity"
+            android:exported="false"
+            android:theme="@style/Base.Theme.Eventjoy.ThemePopup" />
+        <activity
+            android:name=".activities.EditMemberActivity"
             android:exported="false" />
+        <activity
+            android:name=".activities.ModifyPasswordActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.PopupEditAccountActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Eventjoy.Dialog.NoActionBar" />
+        <activity
+            android:name=".activities.MemberMainActivity"
+            android:exported="false"
+            android:label="@string/title_activity_drawer_j"
+            android:theme="@style/Theme.Eventjoy.NoActionBar" />
         <activity
             android:name=".activities.SignUpActivity"
             android:exported="false" />
@@ -37,4 +53,5 @@
             </intent-filter>
         </activity>
     </application>
+
 </manifest>

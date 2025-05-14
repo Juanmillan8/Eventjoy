@@ -43,21 +43,12 @@ public class MemberService {
             }
         });
     }
-
-    public void getMemberById(String memberId, OnSuccessListener<Member> successListener, OnFailureListener failureListener) {
-        mFirestore.whereEqualTo("id", memberId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-            @Override
-            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                DocumentSnapshot doc = queryDocumentSnapshots.getDocuments().get(0);
-                Member member = doc.toObject(Member.class);
-                successListener.onSuccess(member);
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                failureListener.onFailure(e);
-            }
-        });
+    public void getMemberById(String memberId, OnSuccessListener<QuerySnapshot> successListener, OnFailureListener failureListener) {
+        mFirestore
+                .whereEqualTo("id", memberId)
+                .get()
+                .addOnSuccessListener(successListener)
+                .addOnFailureListener(failureListener);
     }
 
     public void getMemberByUid(String memberUid, OnSuccessListener<QuerySnapshot> successListener, OnFailureListener failureListener) {
@@ -68,34 +59,20 @@ public class MemberService {
                 .addOnFailureListener(failureListener);
     }
 
-    public void checkRepeatedDNI(String patientDNI, OnSuccessListener<String> successListener, OnFailureListener failureListener) {
-        mFirestore.whereEqualTo("dni", patientDNI).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-            @Override
-            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                Boolean exists = !queryDocumentSnapshots.isEmpty();
-                successListener.onSuccess(exists.toString());
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                failureListener.onFailure(e);
-            }
-        });
+    public void checkRepeatedDNI(String patientDNI, OnSuccessListener<QuerySnapshot> successListener, OnFailureListener failureListener) {
+        mFirestore
+                .whereEqualTo("dni", patientDNI)
+                .get()
+                .addOnSuccessListener(successListener)
+                .addOnFailureListener(failureListener);
     }
 
-    public void checkRepeatedUsername(String patientUsername, OnSuccessListener<String> successListener, OnFailureListener failureListener) {
-        mFirestore.whereEqualTo("username", patientUsername).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-            @Override
-            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                Boolean exists = !queryDocumentSnapshots.isEmpty();
-                successListener.onSuccess(exists.toString());
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                failureListener.onFailure(e);
-            }
-        });
+    public void checkRepeatedUsername(String patientUsername, OnSuccessListener<QuerySnapshot> successListener, OnFailureListener failureListener) {
+        mFirestore
+                .whereEqualTo("username", patientUsername)
+                .get()
+                .addOnSuccessListener(successListener)
+                .addOnFailureListener(failureListener);
     }
 
     public void updateMember(Member m) {

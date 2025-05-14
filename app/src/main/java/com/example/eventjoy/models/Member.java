@@ -10,7 +10,7 @@ public class Member extends Person{
     private String phone;
     private String birthdate;
     private String username;
-    private int level;
+    private Integer level;
     private Provider provider;
 
     public Member() {
@@ -49,11 +49,11 @@ public class Member extends Person{
         this.username = username;
     }
 
-    public int getLevel() {
+    public Integer getLevel() {
         return level;
     }
 
-    public void setLevel(int level) {
+    public void setLevel(Integer level) {
         this.level = level;
     }
 

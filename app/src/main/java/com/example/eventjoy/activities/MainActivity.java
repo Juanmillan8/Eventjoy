@@ -3,7 +3,6 @@ package com.example.eventjoy.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -41,11 +40,7 @@ import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.squareup.picasso.Picasso;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -102,6 +97,10 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
                 Toast.makeText(getApplicationContext(), "Signed in with Google. Finish registration to use the app.", Toast.LENGTH_SHORT).show();
             }
+        } else {
+            editor = sharedPreferences.edit();
+            editor.clear();
+            editor.commit();
         }
 
         btnSignInGoogle.setOnClickListener(new View.OnClickListener() {
@@ -113,13 +112,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-    }
-
-    private void logout() {
-        editor = sharedPreferences.edit();
-        editor.clear();
-        editor.commit();
-        mAuth.signOut();
     }
 
     @Override
