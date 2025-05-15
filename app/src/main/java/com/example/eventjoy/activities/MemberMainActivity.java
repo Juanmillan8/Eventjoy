@@ -128,16 +128,7 @@ public class MemberMainActivity extends AppCompatActivity {
         progressDialog.show(getSupportFragmentManager(), "progressDialog");
     }
 
-    private void loadProfileIcon(String filename) {
-        profileIcon=null;
-        profileIcon = navigationView.getHeaderView(0).findViewById(R.id.profileIcon);
-        File directory = getApplicationContext().getFilesDir();
-        File imageFile = new File(directory, filename);
-        Picasso.get().load(imageFile).into(profileIcon);
-    }
-
     private void loadComponents() {
-        Log.i("1", "1");
         initializeDialog();
         mAuth = FirebaseAuth.getInstance();
         sharedPreferences = getSharedPreferences("EventjoyPreferences", Context.MODE_PRIVATE);
@@ -150,21 +141,20 @@ public class MemberMainActivity extends AppCompatActivity {
             @Override
             public void onSuccess(QuerySnapshot snapshot) {
                 member = snapshot.getDocuments().get(0).toObject(Member.class);
-                Log.i("2", "2");
                 tvName.setText("Hello, " + member.getName());
                 tvEmail.setText(user.getEmail());
-                Log.i("getfotoooooooo", member.getPhoto());
-                if (member.getPhoto() != null) {
-                    Log.i("3", "3");
-                    loadProfileIcon(member.getPhoto());
+                if (member.getPhoto() != null && !member.getPhoto().isEmpty()) {
+                    Picasso.get()
+                            .load(member.getPhoto())
+                            .into(profileIcon);
                 }
-                Log.i("4", "4");
                 progressDialog.dismiss();
             }
         }, new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Toast.makeText(getApplicationContext(), "Error querying database " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                progressDialog.dismiss();
             }
         });
     }

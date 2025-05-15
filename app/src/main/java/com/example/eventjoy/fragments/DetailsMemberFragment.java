@@ -52,12 +52,6 @@ public class DetailsMemberFragment extends Fragment {
         return rootView;
     }
 
-    private void loadProfileIcon(String filename, ImageView imageView, Context context) {
-        File directory = context.getFilesDir();
-        File imageFile = new File(directory, filename);
-        Picasso.get().load(imageFile).into(imageView);
-    }
-
     private void loadComponents() {
         profileIcon = rootView.findViewById(R.id.profileIcon);
         btnEditAccount = rootView.findViewById(R.id.btnEditAccount);
@@ -81,8 +75,10 @@ public class DetailsMemberFragment extends Fragment {
         tvLevel.setText("Level " + member.getLevel().toString());
         tvNameAndSurname.setMaxWidth(getResources().getDisplayMetrics().widthPixels-300);
 
-        if (member.getPhoto() != null) {
-            loadProfileIcon(member.getPhoto(), profileIcon, getContext());
+        if (member.getPhoto() != null && !member.getPhoto().isEmpty()) {
+            Picasso.get()
+                    .load(member.getPhoto())
+                    .into(profileIcon);
         }
 
     }

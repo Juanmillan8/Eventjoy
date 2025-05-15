@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/homeMemberFragment"
         android:name="com.example.eventjoy.fragments.HomeMemberFragment"
-        android:label="@string/menu_home"
+        android:label="Eventjoy"
         tools:layout="@layout/fragment_home_member" />
     <fragment
         android:id="@+id/detailsMemberFragment"

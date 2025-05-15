@@ -11,6 +11,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -28,15 +29,19 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.cloudinary.android.callback.ErrorInfo;
+import com.cloudinary.android.callback.UploadCallback;
 import com.example.eventjoy.R;
 import com.example.eventjoy.enums.Provider;
 import com.example.eventjoy.enums.Role;
 import com.example.eventjoy.fragments.DetailsMemberFragment;
 import com.example.eventjoy.fragments.ProgressDialogFragment;
+import com.example.eventjoy.manager.CloudinaryManager;
 import com.example.eventjoy.models.Member;
 import com.example.eventjoy.services.MemberService;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -58,9 +63,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
+import java.util.Map;
 
 public class EditMemberActivity extends AppCompatActivity {
 
@@ -83,7 +90,6 @@ public class EditMemberActivity extends AppCompatActivity {
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
     private ActivityResultLauncher<Intent> cameraLauncher;
     private FirebaseUser user;
-    private Boolean error;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -149,13 +155,13 @@ public class EditMemberActivity extends AppCompatActivity {
         });
 
         cameraLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-            if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                Bundle extras = result.getData().getExtras();
-                Bitmap imageBitmap = (Bitmap) extras.get("data");
-                profileIcon.setImageBitmap(imageBitmap);
-                changedImage=true;
-            } else {
-                Toast.makeText(this, "The image could not be obtained", Toast.LENGTH_SHORT).show();
+            if (result.getResultCode() == RESULT_OK) {
+                if (mImageUri != null) {
+                    Picasso.get().load(mImageUri).into(profileIcon);
+                    changedImage = true;
+                } else {
+                    Toast.makeText(this, "Error getting image", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -164,8 +170,26 @@ public class EditMemberActivity extends AppCompatActivity {
     private void openCamera() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (intent.resolveActivity(getPackageManager()) != null) {
-            cameraLauncher.launch(intent);
+            try {
+                File photoFile = createImageFile();
+                if (photoFile != null) {
+                    mImageUri = FileProvider.getUriForFile(this, getPackageName(), photoFile);
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, mImageUri);
+                    cameraLauncher.launch(intent);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.e("Error: ", e.getMessage());
+                Toast.makeText(this, "Could not create image file", Toast.LENGTH_SHORT).show();
+            }
         }
+    }
+
+    private File createImageFile() throws IOException {
+        String timeStamp = LocalDateTime.now().toString();
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        return File.createTempFile(imageFileName, ".jpg", storageDir);
     }
 
     private boolean checkCameraPermission() {
@@ -208,13 +232,6 @@ public class EditMemberActivity extends AppCompatActivity {
                 }
             }
         }
-    }
-
-
-    private void loadProfileIcon(String filename, ImageView imageView, Context context) {
-        File directory = context.getFilesDir();
-        File imageFile = new File(directory, filename);
-        Picasso.get().load(imageFile).into(imageView);
     }
 
     @Override
@@ -269,7 +286,7 @@ public class EditMemberActivity extends AppCompatActivity {
                                         Toast.makeText(getApplicationContext(), "The username " + textInputEditTextUsername.getText().toString() + " is already registered, try a different one", Toast.LENGTH_LONG).show();
                                     }else{
                                         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-                                            saveProfileImage(profileIcon, "profileIcon_" + memberEdit.getId(), getApplicationContext());
+                                            saveProfileImage();
                                         }else{
                                             Intent showPoPup = new Intent(getApplicationContext(), PopupReauthenticateActivity.class);
                                             startActivity(showPoPup);
@@ -304,40 +321,37 @@ public class EditMemberActivity extends AppCompatActivity {
         progressDialog.show(getSupportFragmentManager(), "progressDialog");
     }
 
-    private void saveProfileImage(ImageView imageView, String filename, Context context) {
-
+    private void saveProfileImage(){
         if(changedImage){
-            Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
-            error = false;
-            File directory = context.getFilesDir();
-            File imageFile = new File(directory, filename);
-            FileOutputStream fos = null;
-            try {
-                fos = new FileOutputStream(imageFile);
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
-                fos.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-                Toast.makeText(context, "Error saving profile picture", Toast.LENGTH_SHORT).show();
-                error = true;
-            } finally {
-                if (fos != null) {
-                    try {
-                        fos.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+            CloudinaryManager.uploadImage(getApplicationContext(), mImageUri, new UploadCallback() {
+                @Override
+                public void onStart(String requestId) {
                 }
-            }
-            if(error){
-                memberEdit.setPhoto(null);
-            }else{
-                memberEdit.setPhoto(filename);
-            }
+
+                @Override
+                public void onProgress(String requestId, long bytes, long totalBytes) {
+                }
+
+                @Override
+                public void onSuccess(String requestId, Map resultData) {
+                    String imageUrl = resultData.get("secure_url").toString();
+                    memberEdit.setPhoto(imageUrl);
+                    editMember();
+                }
+                @Override
+                public void onError(String requestId, ErrorInfo error) {
+                    progressDialog.dismiss();
+                    Toast.makeText(getApplicationContext(), "Error saving profile picture: " + error.toString(), Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onReschedule(String requestId, ErrorInfo error) {
+                }
+            });
         }else{
             memberEdit.setPhoto(null);
+            editMember();
         }
-        editMember();
     }
 
     private void editMember() {
@@ -428,9 +442,11 @@ public class EditMemberActivity extends AppCompatActivity {
         textInputEditTextBirthdate.setText(memberEdit.getBirthdate().toString());
         textInputEditTextEmail.setText(sharedPreferences.getString("email", ""));
 
-        if (memberEdit.getPhoto() != null) {
-            loadProfileIcon(memberEdit.getPhoto(), profileIcon, getApplicationContext());
-            changedImage = true;
+        if (memberEdit.getPhoto() != null && !memberEdit.getPhoto().isEmpty()) {
+            Picasso.get()
+                    .load(memberEdit.getPhoto())
+                    .into(profileIcon);
+            changedImage=true;
         }
 
         if (memberEdit.getProvider().equals(Provider.GOOGLE)) {

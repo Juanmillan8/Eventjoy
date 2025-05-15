@@ -11,7 +11,9 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,14 +33,20 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.motion.widget.MotionLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.bumptech.glide.Glide;
+import com.cloudinary.android.MediaManager;
+import com.cloudinary.android.callback.ErrorInfo;
+import com.cloudinary.android.callback.UploadCallback;
 import com.example.eventjoy.R;
 import com.example.eventjoy.enums.Provider;
 import com.example.eventjoy.enums.Role;
 import com.example.eventjoy.fragments.ProgressDialogFragment;
+import com.example.eventjoy.manager.CloudinaryManager;
 import com.example.eventjoy.models.Member;
 import com.example.eventjoy.services.MemberService;
 import com.example.eventjoy.views.LockableScrollView;
@@ -55,13 +63,23 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SignUpActivity extends AppCompatActivity {
 
@@ -82,7 +100,6 @@ public class SignUpActivity extends AppCompatActivity {
     private ProgressDialogFragment progressDialog;
     private static final int PICK_IMAGE_REQUEST = 0;
     private Uri mImageUri;
-    private Boolean error;
     private FirebaseUser user;
     private TextInputLayout textInputLayoutPassword;
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
@@ -193,13 +210,13 @@ public class SignUpActivity extends AppCompatActivity {
         });
 
         cameraLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-            if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                Bundle extras = result.getData().getExtras();
-                Bitmap imageBitmap = (Bitmap) extras.get("data");
-                profileIcon.setImageBitmap(imageBitmap);
-                changedImage=true;
-            } else {
-                Toast.makeText(this, "The image could not be obtained", Toast.LENGTH_SHORT).show();
+            if (result.getResultCode() == RESULT_OK) {
+                if (mImageUri != null) {
+                    Picasso.get().load(mImageUri).into(profileIcon);
+                    changedImage = true;
+                } else {
+                    Toast.makeText(this, "Error getting image", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -208,7 +225,18 @@ public class SignUpActivity extends AppCompatActivity {
     private void openCamera() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (intent.resolveActivity(getPackageManager()) != null) {
-            cameraLauncher.launch(intent);
+            try {
+                File photoFile = createImageFile();
+                if (photoFile != null) {
+                    mImageUri = FileProvider.getUriForFile(this, getPackageName(), photoFile);
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, mImageUri);
+                    cameraLauncher.launch(intent);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.e("Error: ", e.getMessage());
+                Toast.makeText(this, "Could not create image file", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -361,7 +389,7 @@ public class SignUpActivity extends AppCompatActivity {
                 editor.putString("id", id);
                 editor.apply();
                 if (changedImage) {
-                    saveProfileImage(m, profileIcon, "profileIcon_" + id, getApplicationContext());
+                    saveProfileImage(m);
                 } else {
                     Toast.makeText(getApplicationContext(), "Member successfully registered", Toast.LENGTH_SHORT).show();
                     progressDialog.dismiss();
@@ -376,6 +404,48 @@ public class SignUpActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "Error querying database " + e.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    private void saveProfileImage(Member m){
+        CloudinaryManager.uploadImage(getApplicationContext(), mImageUri, new UploadCallback() {
+            @Override
+            public void onStart(String requestId) {
+            }
+
+            @Override
+            public void onProgress(String requestId, long bytes, long totalBytes) {
+            }
+
+            @Override
+            public void onSuccess(String requestId, Map resultData) {
+                String imageUrl = resultData.get("secure_url").toString();
+                m.setPhoto(imageUrl);
+                memberService.updateMember(m);
+                Toast.makeText(getApplicationContext(), "Member successfully registered", Toast.LENGTH_SHORT).show();
+                Intent memberMainIntent = new Intent(getApplicationContext(), MemberMainActivity.class);
+                startActivity(memberMainIntent);
+                progressDialog.dismiss();
+            }
+
+            @Override
+            public void onError(String requestId, ErrorInfo error) {
+                Toast.makeText(getApplicationContext(), "Registered member without profile photo", Toast.LENGTH_SHORT).show();
+                Intent memberMainIntent = new Intent(getApplicationContext(), MemberMainActivity.class);
+                startActivity(memberMainIntent);
+                progressDialog.dismiss();
+            }
+
+            @Override
+            public void onReschedule(String requestId, ErrorInfo error) {
+            }
+        });
+    }
+
+    private File createImageFile() throws IOException {
+        String timeStamp = LocalDateTime.now().toString();
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        return File.createTempFile(imageFileName, ".jpg", storageDir);
     }
 
     private void initializeDialog() {
@@ -435,42 +505,6 @@ public class SignUpActivity extends AppCompatActivity {
                     changedImage=true;
                 }
             }
-        }
-    }
-
-    private void saveProfileImage(Member m, ImageView imageView, String filename, Context context) {
-        Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
-        error = false;
-        File directory = context.getFilesDir();
-        File imageFile = new File(directory, filename);
-        FileOutputStream fos = null;
-
-        m.setPhoto(filename);
-
-        try {
-            fos = new FileOutputStream(imageFile);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
-            fos.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(context, "Error saving profile picture", Toast.LENGTH_SHORT).show();
-            error = true;
-        } finally {
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            if (!error) {
-                memberService.updateMember(m);
-            }
-            Toast.makeText(getApplicationContext(), "Member successfully registered", Toast.LENGTH_SHORT).show();
-            progressDialog.dismiss();
-            Intent memberMainIntent = new Intent(getApplicationContext(), MemberMainActivity.class);
-            startActivity(memberMainIntent);
         }
     }
 
