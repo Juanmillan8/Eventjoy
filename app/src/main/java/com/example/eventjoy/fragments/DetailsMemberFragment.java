@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.eventjoy.R;
@@ -32,6 +33,7 @@ public class DetailsMemberFragment extends Fragment {
     private Member member;
     private ImageButton btnEditAccount;
     private ImageView profileIcon;
+    private LinearLayout linearLayoutEmail, linearLayoutPhoneNumber, linearLayoutDni;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -40,6 +42,7 @@ public class DetailsMemberFragment extends Fragment {
         rootView = inflater.inflate(R.layout.fragment_details_member, container, false);
 
         loadComponents();
+
         btnEditAccount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -53,6 +56,9 @@ public class DetailsMemberFragment extends Fragment {
     }
 
     private void loadComponents() {
+        linearLayoutEmail = rootView.findViewById(R.id.linearLayoutEmail);
+        linearLayoutPhoneNumber = rootView.findViewById(R.id.linearLayoutPhoneNumber);
+        linearLayoutDni = rootView.findViewById(R.id.linearLayoutDni);
         profileIcon = rootView.findViewById(R.id.profileIcon);
         btnEditAccount = rootView.findViewById(R.id.btnEditAccount);
         tvEmail = rootView.findViewById(R.id.tvEmail);
@@ -68,12 +74,21 @@ public class DetailsMemberFragment extends Fragment {
 
         tvNameAndSurname.setText(member.getName() + " " + member.getSurname());
         tvUsername.setText(member.getUsername());
-        tvEmail.setText(sharedPreferences.getString("email", ""));
-        tvPhoneNumber.setText(member.getDni());
-        tvDni.setText(member.getPhone());
         tvBirthdate.setText(member.getBirthdate().toString());
         tvLevel.setText("Level " + member.getLevel().toString());
+
+        if(member.getId().equals(sharedPreferences.getString("id", ""))){
+            linearLayoutEmail.setVisibility(View.VISIBLE);
+            linearLayoutPhoneNumber.setVisibility(View.VISIBLE);
+            linearLayoutDni.setVisibility(View.VISIBLE);
+            tvEmail.setText(sharedPreferences.getString("email", ""));
+            tvPhoneNumber.setText(member.getPhone());
+            tvDni.setText(member.getDni());
+            btnEditAccount.setVisibility(View.VISIBLE);
+        }
+
         tvNameAndSurname.setMaxWidth(getResources().getDisplayMetrics().widthPixels-300);
+
 
         if (member.getPhoto() != null && !member.getPhoto().isEmpty()) {
             Picasso.get()

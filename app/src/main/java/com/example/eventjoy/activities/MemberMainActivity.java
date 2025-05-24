@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -64,7 +65,7 @@ public class MemberMainActivity extends AppCompatActivity {
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.homeMemberFragment, R.id.detailsMemberFragment)
+                R.id.homeMemberFragment, R.id.detailsMemberFragment, R.id.listValorationsFragment)
                 .setOpenableLayout(drawer)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_member_main);
@@ -82,7 +83,11 @@ public class MemberMainActivity extends AppCompatActivity {
                 navController.navigate(R.id.detailsMemberFragment, bundle);
                 return true;
             } else if (item.getItemId() == R.id.homeMemberFragment) {
+                binding.appBarMemberMain.toolbarMember.getMenu().clear();
                 navController.navigate(R.id.homeMemberFragment);
+                return true;
+            } else if (item.getItemId() == R.id.listValorationsFragment) {
+                navController.navigate(R.id.listValorationsFragment);
                 return true;
             }
             return NavigationUI.onNavDestinationSelected(item, navController)
@@ -148,13 +153,13 @@ public class MemberMainActivity extends AppCompatActivity {
                             .load(member.getPhoto())
                             .into(profileIcon);
                 }
-                progressDialog.dismiss();
+                progressDialog.dismissAllowingStateLoss();
             }
         }, new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Toast.makeText(getApplicationContext(), "Error querying database " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                progressDialog.dismiss();
+                progressDialog.dismissAllowingStateLoss();
             }
         });
     }

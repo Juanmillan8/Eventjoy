@@ -162,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(QuerySnapshot snapshot) {
                 if (!snapshot.isEmpty()) {
                     Member m = snapshot.getDocuments().get(0).toObject(Member.class);
-
+                    Log.i("INICIO", m.getId());
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putString("email", email);
                     editor.putString("role", Role.MEMBER.name());

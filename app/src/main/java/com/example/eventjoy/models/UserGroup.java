@@ -7,7 +7,7 @@ public class UserGroup extends DomainEntity{
     private String userId;
     private String groupId;
     private Boolean isAdmin;
-    private LocalDateTime joinedAt;
+    private String joinedAt;
     private Boolean notificationsEnabled;
 
     public UserGroup() {
@@ -38,11 +38,11 @@ public class UserGroup extends DomainEntity{
         isAdmin = admin;
     }
 
-    public LocalDateTime getJoinedAt() {
+    public String getJoinedAt() {
         return joinedAt;
     }
 
-    public void setJoinedAt(LocalDateTime joinedAt) {
+    public void setJoinedAt(String joinedAt) {
         this.joinedAt = joinedAt;
     }
 
@@ -60,7 +60,7 @@ public class UserGroup extends DomainEntity{
                 "userId='" + userId + '\'' +
                 ", groupId='" + groupId + '\'' +
                 ", isAdmin=" + isAdmin +
-                ", joinedAt=" + joinedAt +
+                ", joinedAt='" + joinedAt + '\'' +
                 ", notificationsEnabled=" + notificationsEnabled +
                 '}';
     }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,13 +9,71 @@
 
 
     <LinearLayout
+        android:id="@+id/linearLayoutChips"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        tools:layout_editor_absoluteX="1dp"
-        tools:layout_editor_absoluteY="1dp">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/mediumGreen"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
 
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupFilterList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipMyGroups"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="My groups"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            app:chipIconTint="@color/black"
+            app:chipIcon="@drawable/icon_group" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipOtherGroups"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:chipIconTint="@color/black"
+            app:chipIcon="@drawable/icon_add_group"
+            android:text="Other groups" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipAllGroups"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:chipIconTint="@color/black"
+                app:chipIcon="@drawable/icon_add_group"
+                android:layout_marginLeft="5dp"
+                android:text="All groups" />
+
+        </com.google.android.material.chip.ChipGroup>
     </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btnAddGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="20dp"
+        android:src="@drawable/icon_add_group"
+        app:tint="@color/white"
+        android:backgroundTint="@color/mediumGreen"
+        android:alpha="0.6"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <ListView
+        android:id="@+id/lvGroups"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:divider="@null"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayoutChips"
+        tools:layout_editor_absoluteX="1dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>

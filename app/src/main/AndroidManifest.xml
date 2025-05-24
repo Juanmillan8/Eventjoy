@@ -22,6 +22,28 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Eventjoy">
         <activity
+            android:name=".activities.CreateValorationsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.ListValorationsContainerActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.DetailsMemberContainerActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.PopupMemberOptionsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Eventjoy.Dialog.NoActionBar" />
+        <activity
+            android:name=".activities.DetailsGroupActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.GroupActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.CreateGroupActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.PopupReauthenticateActivity"
             android:exported="false"
             android:theme="@style/Base.Theme.Eventjoy.ThemePopup" />
@@ -52,6 +74,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.example.eventjoy"

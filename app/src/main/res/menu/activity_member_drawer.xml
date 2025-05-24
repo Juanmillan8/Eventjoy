@@ -13,6 +13,10 @@
             android:icon="@drawable/baseline_account_circle_24"
             android:title="Profile" />
         <item
+            android:id="@+id/listValorationsFragment"
+            android:icon="@drawable/icon_list_rating"
+            android:title="Ratings" />
+        <item
             android:id="@+id/logout"
             android:icon="@drawable/logout_icon"
             android:title="Logout" />

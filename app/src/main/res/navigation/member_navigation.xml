@@ -15,4 +15,9 @@
         android:name="com.example.eventjoy.fragments.DetailsMemberFragment"
         android:label="Your account"
         tools:layout="@layout/fragment_details_member" />
+    <fragment
+        android:id="@+id/listValorationsFragment"
+        android:name="com.example.eventjoy.fragments.ListValorationsFragment"
+        android:label="Received ratings"
+        tools:layout="@layout/fragment_list_valoration" />
 </navigation>

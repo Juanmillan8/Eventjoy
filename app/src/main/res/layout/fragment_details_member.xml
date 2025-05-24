@@ -71,7 +71,9 @@
                 android:src="@drawable/icon_edit"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/tvNameAndSurname"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                android:visibility="gone"
+                />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <TextView
@@ -123,10 +125,12 @@
 
 
         <LinearLayout
+            android:id="@+id/linearLayoutEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
             android:layout_marginTop="20dp"
+            android:visibility="gone"
             android:orientation="horizontal">
 
             <ImageView
@@ -160,10 +164,12 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/linearLayoutPhoneNumber"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
             android:layout_marginTop="20dp"
+            android:visibility="gone"
             android:orientation="horizontal">
 
             <ImageView
@@ -197,10 +203,12 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/linearLayoutDni"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
             android:layout_marginTop="20dp"
+            android:visibility="gone"
             android:orientation="horizontal">
 
             <ImageView
