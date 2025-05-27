@@ -13,7 +13,7 @@ public class Event extends DomainEntity{
     private int maxParticipants;
     private Address address;
     private EventStatus status;
-    private String idGroup;
+    private String groupId;
 
     public Event() {
         super();
@@ -75,12 +75,12 @@ public class Event extends DomainEntity{
         this.status = status;
     }
 
-    public String getIdGroup() {
-        return idGroup;
+    public String getGroupId() {
+        return groupId;
     }
 
-    public void setIdGroup(String idGroup) {
-        this.idGroup = idGroup;
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
     }
 
     @Override
@@ -93,7 +93,7 @@ public class Event extends DomainEntity{
                 ", maxParticipants=" + maxParticipants +
                 ", address=" + address +
                 ", status=" + status +
-                ", idGroup='" + idGroup + '\'' +
+                ", groupId='" + groupId + '\'' +
                 '}';
     }
 }

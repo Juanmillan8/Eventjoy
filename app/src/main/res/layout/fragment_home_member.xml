@@ -22,7 +22,9 @@
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/chipGroupFilterList"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            app:singleSelection="true"
+            app:selectionRequired="true">
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipMyGroups"
@@ -32,7 +34,9 @@
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
             app:chipIconTint="@color/black"
-            app:chipIcon="@drawable/icon_group" />
+            app:chipIcon="@drawable/icon_group"
+            android:checkable="true"
+            />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipOtherGroups"
@@ -40,6 +44,7 @@
             android:layout_height="wrap_content"
             app:chipIconTint="@color/black"
             app:chipIcon="@drawable/icon_add_group"
+            android:checkable="true"
             android:text="Other groups" />
 
             <com.google.android.material.chip.Chip
@@ -49,6 +54,7 @@
                 app:chipIconTint="@color/black"
                 app:chipIcon="@drawable/icon_add_group"
                 android:layout_marginLeft="5dp"
+                android:checkable="true"
                 android:text="All groups" />
 
         </com.google.android.material.chip.ChipGroup>

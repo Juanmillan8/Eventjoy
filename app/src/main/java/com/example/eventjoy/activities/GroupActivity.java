@@ -18,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.eventjoy.R;
 import com.example.eventjoy.enums.Provider;
+import com.example.eventjoy.enums.UserGroupRole;
 import com.example.eventjoy.models.Group;
 import com.example.eventjoy.models.Member;
 import com.squareup.picasso.Picasso;
@@ -25,10 +26,11 @@ import com.squareup.picasso.Picasso;
 public class GroupActivity extends AppCompatActivity {
 
     private Toolbar toolbarActivity;
-    private Bundle getGroup;
+    private Bundle getData;
     private Group group;
     private ImageView groupIcon;
     private TextView tvTitle;
+    private String userGroupRole;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +50,7 @@ public class GroupActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent detailsGroupIntent = new Intent(getApplicationContext(), DetailsGroupActivity.class);
                 detailsGroupIntent.putExtra("group", group);
+                detailsGroupIntent.putExtra("userGroupRole", userGroupRole);
                 startActivity(detailsGroupIntent);
             }
         });
@@ -64,8 +67,9 @@ public class GroupActivity extends AppCompatActivity {
         toolbarActivity = findViewById(R.id.toolbarActivity);
         groupIcon = findViewById(R.id.groupIcon);
         tvTitle = findViewById(R.id.tvTitle);
-        getGroup = getIntent().getExtras();
-        group = (Group) getGroup.getSerializable("group");
+        getData = getIntent().getExtras();
+        userGroupRole = getData.getString("userGroupRole");
+        group = (Group) getData.getSerializable("group");
         tvTitle.setText(group.getTitle());
 
         if (group.getIcon() != null && !group.getIcon().isEmpty()) {

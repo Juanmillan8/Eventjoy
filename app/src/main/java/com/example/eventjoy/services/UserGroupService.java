@@ -4,253 +4,308 @@ import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.example.eventjoy.callbacks.GroupsCallback;
+import com.example.eventjoy.callbacks.MembersCallback;
+import com.example.eventjoy.callbacks.SimpleCallback;
+import com.example.eventjoy.callbacks.UserGroupRoleCallback;
+import com.example.eventjoy.enums.UserGroupRole;
+import com.example.eventjoy.enums.Visibility;
 import com.example.eventjoy.models.Group;
+import com.example.eventjoy.models.Member;
 import com.example.eventjoy.models.UserGroup;
+import com.example.eventjoy.models.Valoration;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FieldPath;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
+import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class UserGroupService {
-    private FirebaseFirestore mFirestore;
+
+    private DatabaseReference databaseReferenceUserGroups;
+    private DatabaseReference databaseReferenceGroups;
+    private DatabaseReference databaseReferenceMembers;
+
+    private ValueEventListener userGroupsListener;
+    private ValueEventListener groupsListener;
+    private ValueEventListener memberListener;
 
     public UserGroupService(Context context) {
-        mFirestore = FirebaseFirestore.getInstance();
+        databaseReferenceUserGroups = FirebaseDatabase.getInstance().getReference().child("userGroups");
+        databaseReferenceGroups = FirebaseDatabase.getInstance().getReference().child("groups");
+        databaseReferenceMembers = FirebaseDatabase.getInstance().getReference().child("members");
     }
 
-    public void insertUserGroup(UserGroup u, OnSuccessListener<String> successListener, OnFailureListener failureListener) {
-        String id = mFirestore.collection("userGroups").document().getId();
-        u.setId(id);
-        mFirestore.collection("userGroups").document(id).set(u).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void unused) {
-                successListener.onSuccess(id);
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                failureListener.onFailure(e);
-            }
-        });
+    public String insertUserGroup(UserGroup u) {
+        DatabaseReference newReference = databaseReferenceUserGroups.push();
+        u.setId(newReference.getKey());
+
+        newReference.setValue(u);
+        return u.getId();
     }
-    /*
-    //Lista los grupos en los que esta registrado, todos y no ve cambios de modificacion
-    public ListenerRegistration getGroups(String userId, GroupsCallback listener) {
-        return mFirestore.collection("userGroups").whereEqualTo("userId", userId).addSnapshotListener((userGroupSnapshots, error) -> {
-            if (error != null || userGroupSnapshots == null) {
-                Log.w("Firestore", "Error escuchando userGroup", error);
-                return;
-            }
 
-            List<String> groupIds = new ArrayList<>();
-            for (DocumentSnapshot doc : userGroupSnapshots.getDocuments()) {
-                String groupId = doc.getString("groupId");
-                if (groupId != null) {
-                    groupIds.add(groupId);
-                }
-            }
-
-            if (groupIds.isEmpty()) {
-                listener.onSuccess(new ArrayList<>());
-                return;
-            }
-
-            mFirestore.collection("groups").whereIn(FieldPath.documentId(), groupIds).get().addOnSuccessListener(groupSnapshots -> {
-                List<Group> resultGroups = new ArrayList<>();
-                for (DocumentSnapshot groupDoc : groupSnapshots) {
-                    Group group = groupDoc.toObject(Group.class);
-                    if (group != null) {
-                        resultGroups.add(group);
-                    }
-                }
-                listener.onSuccess(resultGroups);
-            }).addOnFailureListener(e -> Log.e("Firestore", "Error al obtener grupos", e));
-        });
-    }*/
-
-    /*
-    //Lista los grupos en los que esta registrado, ve modificacion pero se limita a 30 grupos
-    public ListenerRegistration asdasasda(String userId, GroupsCallback callback) {
-        return mFirestore.collection("userGroups").whereEqualTo("userId", userId).addSnapshotListener(new EventListener<QuerySnapshot>() {
+    public void checkUserGroupRole(String groupId, String userId, UserGroupRoleCallback callback) {
+        databaseReferenceUserGroups.orderByChild("userId").equalTo(userId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onEvent(@Nullable QuerySnapshot userGroupSnapshots, @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    callback.onFailure(e);
-                    return;
-                }
-
-                if (userGroupSnapshots != null) {
-                    List<String> groupIds = new ArrayList<>();
-                    for (DocumentSnapshot doc : userGroupSnapshots.getDocuments()) {
-                        String groupId = doc.getString("groupId");
-                        if (groupId != null) {
-                            groupIds.add(groupId);
-                        }
-                    }
-
-                    if (groupIds.isEmpty()) {
-                        callback.onSuccess(new ArrayList<>());
-                        return;
-                    }
-                    Log.d("GroupIDCount", "Total groupIds: " + groupIds.size());
-                    mFirestore.collection("groups").whereIn(FieldPath.documentId(), groupIds).addSnapshotListener(new EventListener<QuerySnapshot>() {
-                        @Override
-                        public void onEvent(@Nullable QuerySnapshot groupSnapshots, @Nullable FirebaseFirestoreException e) {
-                            if (e != null) {
-                                callback.onFailure(e);
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        UserGroup userGroup = snapshot.getValue(UserGroup.class);
+                        if (userGroup.getGroupId().equals(groupId)) {
+                            if(userGroup.getAdmin()){
+                                callback.onSuccess(UserGroupRole.ADMIN);
+                                return;
+                            }else{
+                                callback.onSuccess(UserGroupRole.PARTICIPANT);
                                 return;
                             }
-
-                            if (groupSnapshots != null) {
-                                Log.d("GroupSnapshotCount", "Groups recibidos: " + groupSnapshots.size());
-                                List<Group> groups = new ArrayList<>();
-                                for (DocumentSnapshot groupDoc : groupSnapshots.getDocuments()) {
-                                    Group group = groupDoc.toObject(Group.class);
-                                    group.setId(groupDoc.getId());
-                                    groups.add(group);
-                                }
-                                callback.onSuccess(groups);
-                            }
                         }
-                    });
+                    }
+                    callback.onSuccess(UserGroupRole.NO_PARTICIPANT);
+                }else{
+                    callback.onSuccess(UserGroupRole.NO_PARTICIPANT);
                 }
             }
-        });
-    }*/
 
-    public ListenerRegistration listenToUserGroups(String userId, GroupsCallback callback) {
-        return mFirestore.collection("userGroups").whereEqualTo("userId", userId).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
-            public void onEvent(@Nullable QuerySnapshot userGroupSnapshots, @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    callback.onFailure(e);
-                    return;
-                }
-
-                if (userGroupSnapshots.getMetadata().isFromCache()) {
-                    Log.i("Snapshot", "Primera carga ignorada (desde caché)");
-                    return;
-                }
-
-                Log.i("metodo", userGroupSnapshots.toString());
-                if (userGroupSnapshots != null) {
-                    List<String> groupIds = new ArrayList<>();
-                    for (DocumentSnapshot doc : userGroupSnapshots.getDocuments()) {
-                        String groupId = doc.getString("groupId");
-                        if (groupId != null) {
-                            groupIds.add(groupId);
-                        }
-                    }
-
-                    if (groupIds.isEmpty()) {
-                        Log.i("metodoEmpti", "metodoEmpti");
-                        callback.onSuccess(new ArrayList<>());
-                        return;
-                    }else{
-                        Log.i("metodoNOEmpti", "metodoNOEmpti");
-                    }
-
-                    ArrayList<ArrayList<String>> listaDeListasDeGrupos = new ArrayList<>();
-
-                    if (groupIds.size() > 30) {
-                        while (!groupIds.isEmpty()) {
-                            ArrayList<String> lote = new ArrayList<>();
-
-                            int contador = Math.min(30, groupIds.size());
-
-                            lote.addAll(groupIds.subList(0, contador)); // Agrega primeros 30 o menos
-                            groupIds.subList(0, contador).clear(); // Elimina esos elementos de la lista original
-
-                            listaDeListasDeGrupos.add(lote);
-                        }
-                    } else {
-                        listaDeListasDeGrupos.add(new ArrayList<>(groupIds)); // Copia única si <= 30
-                    }
-
-                    Log.i("LISTADELISTAS", listaDeListasDeGrupos.toString());
-
-                    AtomicInteger completed = new AtomicInteger(0);
-                    int total = listaDeListasDeGrupos.size();
-                    List<Group> groups = new ArrayList<>();
-                    for (int i = 0; i < listaDeListasDeGrupos.size(); i++) {
-                        mFirestore.collection("groups").whereIn(FieldPath.documentId(), listaDeListasDeGrupos.get(i)).addSnapshotListener(new EventListener<QuerySnapshot>() {
-                            @Override
-                            public void onEvent(@Nullable QuerySnapshot groupSnapshots, @Nullable FirebaseFirestoreException e) {
-                                if (e != null) {
-                                    callback.onFailure(e);
-                                    return;
-                                }
-
-                                Log.i("OTROMETODO", "OTROMETODO");
-
-                                if (groupSnapshots != null) {
-                                    Log.i("GROUSNACHONONUL", "GROUSNACHONONUL");
-                                    for (DocumentSnapshot groupDoc : groupSnapshots.getDocuments()) {
-                                        Group group = groupDoc.toObject(Group.class);
-                                        group.setId(groupDoc.getId());
-                                        groups.add(group);
-                                    }
-                                    if (completed.incrementAndGet() == total) {
-                                        Log.i("FIIIIIN", groups.toString());
-                                        callback.onSuccess(groups);
-                                    }
-                                }
-                            }
-                        });
-                    }
-                }
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Error - TimetableService - checkOverlapingTimetables", error.getMessage());
+                callback.onCancelled("Error querying the database: " + error.getMessage());
             }
         });
     }
 
-    /*
-    public ListenerRegistration getGroupsJuan(String userId, GroupsCallback listener) {
-        return mFirestore.collection("userGroups").whereEqualTo("userId", userId).addSnapshotListener((userGroupSnapshots, error) -> {
-            if (error != null || userGroupSnapshots == null) {
-                Log.w("Firestore", "Error escuchando userGroup", error);
-                return;
-            }
+    public void getMembersByGroupId(String groupId, String userId, MembersCallback callback) {
+        if (userGroupsListener != null) {
+            databaseReferenceUserGroups.removeEventListener(userGroupsListener);
+        }
 
-            List<String> groupIds = new ArrayList<>();
-            for (DocumentSnapshot doc : userGroupSnapshots.getDocuments()) {
-                String groupId = doc.getString("groupId");
-                if (groupId != null) {
-                    groupIds.add(groupId);
-                }
-            }
-
-            if (groupIds.isEmpty()) {
-                listener.onSuccess(new ArrayList<>());
-                return;
-            }
-
-            mFirestore.collection("groups").whereIn(FieldPath.documentId(), groupIds).get().addOnSuccessListener(groupSnapshots -> {
-                List<Group> resultGroups = new ArrayList<>();
-                for (DocumentSnapshot groupDoc : groupSnapshots) {
-                    Group group = groupDoc.toObject(Group.class);
-                    if (group != null) {
-                        resultGroups.add(group);
+        userGroupsListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                List<String> userIds = new ArrayList<>();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    UserGroup userGroup = snapshot.getValue(UserGroup.class);
+                    if (!userGroup.getUserId().equals(userId)) {
+                        userIds.add(userGroup.getUserId());
                     }
                 }
-                listener.onSuccess(resultGroups);
-            }).addOnFailureListener(e -> Log.e("Firestore", "Error al obtener grupos", e));
-        });
-    }*/
+
+                if (memberListener != null) {
+                    databaseReferenceMembers.removeEventListener(memberListener);
+                }
+
+                memberListener = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        List<Member> members = new ArrayList<>();
+                        for (DataSnapshot memberSnap : snapshot.getChildren()) {
+                            Member member = memberSnap.getValue(Member.class);
+                            if(userIds.contains(member.getId())){
+                                members.add(member);
+                            }
+                        }
+                        callback.onSuccess(members);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        callback.onFailure(error.toException());
+                    }
+                };
+                databaseReferenceMembers.addValueEventListener(memberListener);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                callback.onFailure(error.toException());
+            }
+        };
+        databaseReferenceUserGroups.orderByChild("groupId").equalTo(groupId).addValueEventListener(userGroupsListener);
+    }
+
+    public void getOtherGroups(String userId, GroupsCallback callback) {
+        if (userGroupsListener != null) {
+            databaseReferenceUserGroups.removeEventListener(userGroupsListener);
+        }
+
+        userGroupsListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                List<String> userGroupIds = new ArrayList<>();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    UserGroup userGroup = snapshot.getValue(UserGroup.class);
+                    if (!userGroup.getUserId().equals(userId)) {
+                        userGroupIds.add(userGroup.getGroupId());
+                    }
+                }
+
+                if (groupsListener != null) {
+                    databaseReferenceGroups.removeEventListener(groupsListener);
+                }
+
+                groupsListener = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        List<Group> groups = new ArrayList<>();
+
+                        for (DataSnapshot groupSnap : snapshot.getChildren()) {
+                            Group group = groupSnap.getValue(Group.class);
+                            if (!group.getVisibility().equals(Visibility.PRIVATE)) {
+                                if (userGroupIds.contains(group.getId())) {
+                                    Log.i("ADIO", group.getId());
+                                    groups.add(group);
+                                }
+                            }
+                        }
+                        callback.onSuccess(groups);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        callback.onFailure(error.toException());
+                    }
+                };
+                databaseReferenceGroups.addValueEventListener(groupsListener);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                callback.onFailure(error.toException());
+            }
+        };
+        databaseReferenceUserGroups.addValueEventListener(userGroupsListener);
+    }
 
 
+    public void getAllGroups(String userId, GroupsCallback callback) {
+        if (userGroupsListener != null) {
+            databaseReferenceUserGroups.removeEventListener(userGroupsListener);
+        }
+
+        userGroupsListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                List<String> userGroupIds = new ArrayList<>();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    UserGroup userGroup = snapshot.getValue(UserGroup.class);
+                    userGroupIds.add(userGroup.getGroupId());
+                }
+
+                if (groupsListener != null) {
+                    databaseReferenceGroups.removeEventListener(groupsListener);
+                }
+
+                groupsListener = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        List<Group> groups = new ArrayList<>();
+
+                        for (DataSnapshot groupSnap : snapshot.getChildren()) {
+                            Group group = groupSnap.getValue(Group.class);
+                            if (group.getVisibility().equals(Visibility.PRIVATE)) {
+                                if (userGroupIds.contains(group.getId())) {
+                                    groups.add(group);
+                                }
+                            } else {
+                                groups.add(group);
+                            }
+
+
+                        }
+                        callback.onSuccess(groups);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        callback.onFailure(error.toException());
+                    }
+                };
+                databaseReferenceGroups.addValueEventListener(groupsListener);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                callback.onFailure(error.toException());
+            }
+        };
+        databaseReferenceUserGroups.orderByChild("userId").equalTo(userId).addValueEventListener(userGroupsListener);
+    }
+
+    public void getByMemberId(String userId, GroupsCallback callback) {
+        if (userGroupsListener != null) {
+            databaseReferenceUserGroups.removeEventListener(userGroupsListener);
+        }
+
+        userGroupsListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                List<String> userGroupIds = new ArrayList<>();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    UserGroup userGroup = snapshot.getValue(UserGroup.class);
+                    userGroupIds.add(userGroup.getGroupId());
+                }
+
+                if (userGroupIds.isEmpty()) {
+                    callback.onSuccess(new ArrayList<>());
+                    return;
+                }
+
+                if (groupsListener != null) {
+                    databaseReferenceGroups.removeEventListener(groupsListener);
+                }
+
+                groupsListener = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        List<Group> groups = new ArrayList<>();
+
+                        for (DataSnapshot groupSnap : snapshot.getChildren()) {
+                            Group group = groupSnap.getValue(Group.class);
+                            if (group != null && userGroupIds.contains(group.getId())) {
+                                groups.add(group);
+                            }
+                        }
+                        callback.onSuccess(groups);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        callback.onFailure(error.toException());
+                    }
+                };
+                databaseReferenceGroups.addValueEventListener(groupsListener);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                callback.onFailure(error.toException());
+            }
+        };
+        databaseReferenceUserGroups.orderByChild("userId").equalTo(userId).addValueEventListener(userGroupsListener);
+    }
+
+    public void stopListening() {
+        if (userGroupsListener != null) {
+            databaseReferenceUserGroups.removeEventListener(userGroupsListener);
+            userGroupsListener = null;
+        }
+        if (groupsListener != null) {
+            databaseReferenceGroups.removeEventListener(groupsListener);
+            groupsListener = null;
+        }
+        if (memberListener != null) {
+            databaseReferenceMembers.removeEventListener(memberListener);
+            memberListener = null;
+        }
+    }
 
 }

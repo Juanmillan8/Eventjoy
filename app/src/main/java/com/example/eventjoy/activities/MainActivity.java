@@ -9,7 +9,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -40,7 +39,9 @@ import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -156,12 +157,11 @@ public class MainActivity extends AppCompatActivity {
         String uid = mAuth.getCurrentUser().getUid();
         String email = mAuth.getCurrentUser().getEmail();
 
-
-        memberService.getMemberByUid(uid, new OnSuccessListener<QuerySnapshot>() {
+        memberService.getMemberByUid(uid, new ValueEventListener() {
             @Override
-            public void onSuccess(QuerySnapshot snapshot) {
-                if (!snapshot.isEmpty()) {
-                    Member m = snapshot.getDocuments().get(0).toObject(Member.class);
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    Member m = snapshot.getChildren().iterator().next().getValue(Member.class);
                     Log.i("INICIO", m.getId());
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putString("email", email);
@@ -181,10 +181,10 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(intent);
                 }
             }
-        }, new OnFailureListener() {
+
             @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getApplicationContext(), "Error querying Firestore: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(getApplicationContext(), "Error querying database " + error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

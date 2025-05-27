@@ -84,20 +84,9 @@ public class CreateValorationsActivity extends AppCompatActivity {
         valoration.setRatedUserId(member.getId());
         valoration.setRaterUserId(sharedPreferences.getString("id", ""));
 
-        valorationService.insertValoration(valoration, new OnSuccessListener<String>() {
-            @Override
-            public void onSuccess(String id) {
-                Toast.makeText(getApplicationContext(), "Valoration created correctly", Toast.LENGTH_SHORT).show();
-                finish();
-            }
-        }, new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getApplicationContext(), "Error querying database " + e.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
-
-
+        valorationService.insertValoration(valoration);
+        Toast.makeText(getApplicationContext(), "Valoration created correctly", Toast.LENGTH_SHORT).show();
+        finish();
 
     }
 

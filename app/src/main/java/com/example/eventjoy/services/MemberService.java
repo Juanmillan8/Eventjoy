@@ -1,94 +1,55 @@
 package com.example.eventjoy.services;
 
 import android.content.Context;
-import android.util.Log;
-
 import androidx.annotation.NonNull;
-
 import com.example.eventjoy.models.Member;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class MemberService {
 
-    private CollectionReference mFirestore;
+    private DatabaseReference database;
 
     public MemberService(Context context) {
-        mFirestore = FirebaseFirestore.getInstance().collection("members");
+        database = FirebaseDatabase.getInstance().getReference().child("members");
     }
 
-    public void insertMember(Member m, OnSuccessListener<String> successListener, OnFailureListener failureListener) {
-        String id = mFirestore.document().getId();
-        m.setId(id);
-        mFirestore.document(id).set(m).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void unused) {
-                successListener.onSuccess(id);
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                failureListener.onFailure(e);
-            }
-        });
+    public String insertMember(Member m) {
+        DatabaseReference newReference = database.push();
+        m.setId(newReference.getKey());
+
+        newReference.setValue(m);
+        return m.getId();
     }
-    public void getMemberById(String memberId, OnSuccessListener<QuerySnapshot> successListener, OnFailureListener failureListener) {
-        mFirestore
-                .whereEqualTo("id", memberId)
-                .get()
-                .addOnSuccessListener(successListener)
-                .addOnFailureListener(failureListener);
+    public void getMemberById(String memberId, ValueEventListener listener) {
+        Query query = database.orderByChild("id").equalTo(memberId);
+        query.addListenerForSingleValueEvent(listener);
     }
 
-    public void getMemberByUid(String memberUid, OnSuccessListener<QuerySnapshot> successListener, OnFailureListener failureListener) {
-        mFirestore
-                .whereEqualTo("userAccountId", memberUid)
-                .get()
-                .addOnSuccessListener(successListener)
-                .addOnFailureListener(failureListener);
+    public void getMemberByUid(String memberUid, ValueEventListener listener) {
+        Query query = database.orderByChild("userAccountId").equalTo(memberUid);
+        query.addListenerForSingleValueEvent(listener);
     }
 
-    public void checkRepeatedDNI(String patientDNI, OnSuccessListener<QuerySnapshot> successListener, OnFailureListener failureListener) {
-        mFirestore
-                .whereEqualTo("dni", patientDNI)
-                .get()
-                .addOnSuccessListener(successListener)
-                .addOnFailureListener(failureListener);
+    public void checkRepeatedDNI(String patientDNI, ValueEventListener listener) {
+        Query query = database.orderByChild("dni").equalTo(patientDNI);
+        query.addListenerForSingleValueEvent(listener);
     }
 
-    public void checkRepeatedUsername(String patientUsername, OnSuccessListener<QuerySnapshot> successListener, OnFailureListener failureListener) {
-        mFirestore
-                .whereEqualTo("username", patientUsername)
-                .get()
-                .addOnSuccessListener(successListener)
-                .addOnFailureListener(failureListener);
+    public void checkRepeatedUsername(String patientUsername, ValueEventListener listener){
+        Query query = database.orderByChild("username").equalTo(patientUsername);
+        query.addListenerForSingleValueEvent(listener);
     }
 
     public void updateMember(Member m) {
-        Map<String, Object> updates = new HashMap<>();
-        updates.put("dni", m.getDni());
-        updates.put("phone", m.getPhone());
-        updates.put("birthdate", m.getBirthdate());
-        updates.put("username", m.getUsername());
-        updates.put("level", m.getLevel());
-        updates.put("provider", m.getProvider());
-        updates.put("name", m.getName());
-        updates.put("surname", m.getSurname());
-        updates.put("photo", m.getPhoto());
-
-
-        mFirestore.document(m.getId()).update(updates);
+        database.child(m.getId()).setValue(m);
     }
 
 

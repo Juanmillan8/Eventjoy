@@ -7,10 +7,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.example.eventjoy.R;
 import com.example.eventjoy.databinding.ActivityMemberMainBinding;
 import com.example.eventjoy.fragments.ProgressDialogFragment;
@@ -19,6 +19,7 @@ import com.example.eventjoy.services.MemberService;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.navigation.NavigationView;
+
 import androidx.annotation.NonNull;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -26,11 +27,13 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
-import java.io.File;
 
 public class MemberMainActivity extends AppCompatActivity {
 
@@ -64,10 +67,7 @@ public class MemberMainActivity extends AppCompatActivity {
 
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
-        mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.homeMemberFragment, R.id.detailsMemberFragment, R.id.listValorationsFragment)
-                .setOpenableLayout(drawer)
-                .build();
+        mAppBarConfiguration = new AppBarConfiguration.Builder(R.id.homeMemberFragment, R.id.detailsMemberFragment, R.id.listValorationsFragment).setOpenableLayout(drawer).build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_member_main);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
@@ -90,8 +90,7 @@ public class MemberMainActivity extends AppCompatActivity {
                 navController.navigate(R.id.listValorationsFragment);
                 return true;
             }
-            return NavigationUI.onNavDestinationSelected(item, navController)
-                    || super.onOptionsItemSelected(item);
+            return NavigationUI.onNavDestinationSelected(item, navController) || super.onOptionsItemSelected(item);
         });
     }
 
@@ -123,8 +122,7 @@ public class MemberMainActivity extends AppCompatActivity {
     @Override
     public boolean onSupportNavigateUp() {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_member_main);
-        return NavigationUI.navigateUp(navController, mAppBarConfiguration)
-                || super.onSupportNavigateUp();
+        return NavigationUI.navigateUp(navController, mAppBarConfiguration) || super.onSupportNavigateUp();
     }
 
     private void initializeDialog() {
@@ -141,25 +139,22 @@ public class MemberMainActivity extends AppCompatActivity {
         tvName = navigationView.getHeaderView(0).findViewById(R.id.tvName);
         tvEmail = navigationView.getHeaderView(0).findViewById(R.id.tvEmail);
         profileIcon = navigationView.getHeaderView(0).findViewById(R.id.profileIcon);
-
-        memberService.getMemberById(sharedPreferences.getString("id", ""), new OnSuccessListener<QuerySnapshot>() {
+        Log.i("IDE", sharedPreferences.getString("id", ""));
+        memberService.getMemberById(sharedPreferences.getString("id", ""), new ValueEventListener() {
             @Override
-            public void onSuccess(QuerySnapshot snapshot) {
-                member = snapshot.getDocuments().get(0).toObject(Member.class);
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                member = dataSnapshot.getChildren().iterator().next().getValue(Member.class);
                 tvName.setText("Hello, " + member.getName());
                 tvEmail.setText(user.getEmail());
                 if (member.getPhoto() != null && !member.getPhoto().isEmpty()) {
-                    Picasso.get()
-                            .load(member.getPhoto())
-                            .into(profileIcon);
+                    Picasso.get().load(member.getPhoto()).into(profileIcon);
                 }
                 progressDialog.dismissAllowingStateLoss();
             }
-        }, new OnFailureListener() {
+
             @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getApplicationContext(), "Error querying database " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                progressDialog.dismissAllowingStateLoss();
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(getApplicationContext(), "Error querying database " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

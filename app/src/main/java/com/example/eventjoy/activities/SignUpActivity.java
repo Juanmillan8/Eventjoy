@@ -6,8 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,7 +21,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -37,9 +34,6 @@ import androidx.core.content.FileProvider;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-
-import com.bumptech.glide.Glide;
-import com.cloudinary.android.MediaManager;
 import com.cloudinary.android.callback.ErrorInfo;
 import com.cloudinary.android.callback.UploadCallback;
 import com.example.eventjoy.R;
@@ -60,25 +54,18 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.Map;
 
 public class SignUpActivity extends AppCompatActivity {
@@ -264,39 +251,37 @@ public class SignUpActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "The minimum age to access the platform is 12 years old", Toast.LENGTH_LONG).show();
             } else {
                 initializeDialog();
-
-                memberService.checkRepeatedDNI(textInputEditTextDni.getText().toString(), new OnSuccessListener<QuerySnapshot>() {
+                memberService.checkRepeatedDNI(textInputEditTextDni.getText().toString(), new ValueEventListener() {
                     @Override
-                    public void onSuccess(QuerySnapshot snapshot) {
-                        if (!snapshot.isEmpty()) {
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
                             progressDialog.dismiss();
                             Toast.makeText(getApplicationContext(), "The DNI " + textInputEditTextDni.getText().toString() + " is already registered, try a different one", Toast.LENGTH_LONG).show();
                         } else {
-                            memberService.checkRepeatedUsername(textInputEditTextUsername.getText().toString(), new OnSuccessListener<QuerySnapshot>() {
+                            memberService.checkRepeatedUsername(textInputEditTextUsername.getText().toString(), new ValueEventListener() {
                                 @Override
-                                public void onSuccess(QuerySnapshot snapshot) {
-                                    if (!snapshot.isEmpty()) {
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    if (snapshot.exists()) {
                                         progressDialog.dismiss();
                                         Toast.makeText(getApplicationContext(), "The username " + textInputEditTextUsername.getText().toString() + " is already registered, try a different one", Toast.LENGTH_LONG).show();
                                     }else{
                                         signUpMember();
                                     }
                                 }
-                            }, new OnFailureListener() {
                                 @Override
-                                public void onFailure(@NonNull Exception e) {
+                                public void onCancelled(@NonNull DatabaseError error) {
+                                    //Se cierra la ventana de carga
                                     progressDialog.dismiss();
-                                    Toast.makeText(getApplicationContext(), "Error querying Firestore: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getApplicationContext(), "Error querying database: " + error.getMessage(), Toast.LENGTH_SHORT).show();
                                 }
                             });
                         }
-
                     }
-                }, new OnFailureListener() {
                     @Override
-                    public void onFailure(@NonNull Exception e) {
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        //Se cierra la ventana de carga
                         progressDialog.dismiss();
-                        Toast.makeText(getApplicationContext(), "Error querying database " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), "Error querying database: " + error.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -381,29 +366,21 @@ public class SignUpActivity extends AppCompatActivity {
 
     private void insertMember(Member m) {
         m.setUserAccountId(mAuth.getCurrentUser().getUid());
-        memberService.insertMember(m, new OnSuccessListener<String>() {
-            @Override
-            public void onSuccess(String id) {
-                editor.putString("email", textInputEditTextEmail.getText().toString());
-                editor.putString("role", Role.MEMBER.name());
-                editor.putString("id", id);
-                editor.apply();
-                if (changedImage) {
-                    saveProfileImage(m);
-                } else {
-                    Toast.makeText(getApplicationContext(), "Member successfully registered", Toast.LENGTH_SHORT).show();
-                    progressDialog.dismiss();
-                    Intent memberMainIntent = new Intent(getApplicationContext(), MemberMainActivity.class);
-                    startActivity(memberMainIntent);
-                }
-            }
-        }, new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                progressDialog.dismiss();
-                Toast.makeText(getApplicationContext(), "Error querying database " + e.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
+        String idMember = memberService.insertMember(m);
+
+        editor.putString("email", textInputEditTextEmail.getText().toString());
+        editor.putString("role", Role.MEMBER.name());
+        editor.putString("id", idMember);
+        editor.apply();
+
+        if (changedImage) {
+            saveProfileImage(m);
+        } else {
+            Toast.makeText(getApplicationContext(), "Member successfully registered", Toast.LENGTH_SHORT).show();
+            progressDialog.dismiss();
+            Intent memberMainIntent = new Intent(getApplicationContext(), MemberMainActivity.class);
+            startActivity(memberMainIntent);
+        }
     }
 
     private void saveProfileImage(Member m){

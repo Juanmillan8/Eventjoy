@@ -1,6 +1,8 @@
 package com.example.eventjoy.activities;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.Menu;
@@ -13,6 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -26,24 +29,35 @@ import androidx.navigation.Navigation;
 import com.example.eventjoy.R;
 import com.example.eventjoy.adapters.GroupAdapter;
 import com.example.eventjoy.adapters.MemberAdapter;
+import com.example.eventjoy.callbacks.GroupsCallback;
+import com.example.eventjoy.callbacks.MembersCallback;
 import com.example.eventjoy.enums.Provider;
+import com.example.eventjoy.fragments.HomeMemberFragment;
 import com.example.eventjoy.models.Group;
 import com.example.eventjoy.models.Member;
+import com.example.eventjoy.services.GroupService;
+import com.example.eventjoy.services.UserGroupService;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class DetailsGroupActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
 
-    private Bundle getGroup;
+    private Bundle getData;
     private Group group;
+    private String userGroupRole;
     private TextView tvTitle, tvDescription;
     private ImageView groupIcon, ivBack;
     private ListView lvMembers;
     private MemberAdapter memberAdapter;
-    private ArrayList<Member> members;
     private SearchView svMembers;
     private TextView tvMembership;
+    private UserGroupService userGroupService;
+    private GroupService groupService;
+    private SharedPreferences sharedPreferences;
+    private String idCurrentUser;
+    private LinearLayout linearLayoutEditGroup, linearLayoutDeleteGroup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +70,7 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
             return insets;
         });
 
+        loadServices();
         loadComponents();
 
         ivBack.setOnClickListener(new View.OnClickListener() {
@@ -72,11 +87,54 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
             startActivity(showPoPup);
         });
 
+        linearLayoutDeleteGroup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                groupService.deleteGroup(group);
+                Toast.makeText(getApplicationContext(), "Successfully deleted group", Toast.LENGTH_SHORT).show();
+                Intent mainMemberActivity = new Intent(getApplicationContext(), MemberMainActivity.class);
+                startActivity(mainMemberActivity);
+            }
+        });
+
         svMembers.setOnQueryTextListener(this);
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        startListeningMembers();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        userGroupService.stopListening();
+    }
+
+    private void startListeningMembers(){
+        userGroupService.stopListening();
+        userGroupService.getMembersByGroupId(group.getId(), idCurrentUser, new MembersCallback() {
+            @Override
+            public void onSuccess(List<Member> members) {
+                memberAdapter = new MemberAdapter(getApplicationContext(), members);
+                lvMembers.setAdapter(memberAdapter);
+                tvMembership.setText(members.size() + " members");
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(getApplicationContext(), "Error querying database " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void loadComponents() {
+        linearLayoutEditGroup = findViewById(R.id.linearLayoutEditGroup);
+        linearLayoutDeleteGroup = findViewById(R.id.linearLayoutDeleteGroup);
+        sharedPreferences = getSharedPreferences("EventjoyPreferences", Context.MODE_PRIVATE);
+        idCurrentUser = sharedPreferences.getString("id", "");
         tvMembership = findViewById(R.id.tvMembership);
         svMembers = findViewById(R.id.svMembers);
         lvMembers = findViewById(R.id.lvMembers);
@@ -84,8 +142,9 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
         tvDescription = findViewById(R.id.tvDescription);
         tvTitle = findViewById(R.id.tvTitle);
         groupIcon = findViewById(R.id.groupIcon);
-        getGroup = getIntent().getExtras();
-        group = (Group) getGroup.getSerializable("group");
+        getData = getIntent().getExtras();
+        userGroupRole = getData.getString("userGroupRole");
+        group = (Group) getData.getSerializable("group");
         tvTitle.setText(group.getTitle());
 
         if (group.getDescription() != null && !group.getDescription().toString().isBlank()) {
@@ -100,35 +159,18 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
                     .placeholder(R.drawable.default_profile_photo)
                     .into(groupIcon);
         }
-        members = new ArrayList<>();
-        Member member1 = new Member();
-        member1.setId("idmember1");
-        member1.setName("Juan");
-        member1.setSurname("Martínez");
-        member1.setUsername("juanito");
-        member1.setDni("12345678A");
-        member1.setPhone("600123456");
-        member1.setBirthdate("1995-04-12");
-        member1.setLevel(1);
-        member1.setProvider(Provider.EMAIL);
 
-        Member member2 = new Member();
-        member2.setId("idmember2");
-        member2.setName("Carlos");
-        member2.setSurname("Gómez");
-        member2.setUsername("mesi");
-        member2.setDni("87654321B");
-        member2.setPhone("600654321");
-        member2.setBirthdate("1992-09-08");
-        member2.setLevel(2);
-        member2.setProvider(Provider.GOOGLE);
+        if(userGroupRole.equals("ADMIN")){
+            linearLayoutDeleteGroup.setVisibility(View.VISIBLE);
+            linearLayoutEditGroup.setVisibility(View.VISIBLE);
+        }
 
-        members.add(member1);
-        members.add(member2);
-
-        memberAdapter = new MemberAdapter(getApplicationContext(), members);
-        lvMembers.setAdapter(memberAdapter);
         configureSearchView();
+    }
+
+    private void loadServices(){
+        userGroupService = new UserGroupService(getApplicationContext());
+        groupService = new GroupService(getApplicationContext());
     }
 
     private void configureSearchView() {
@@ -140,8 +182,6 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
         searchEditText.setTextColor(ContextCompat.getColor(this, R.color.grayBluish));
         searchEditText.setHintTextColor(ContextCompat.getColor(this, R.color.hint));
         searchEditText.setTextSize(16);
-
-        tvMembership.setText(members.size() + " members");
     }
 
     @Override

@@ -8,35 +8,21 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.Toast;
-
 import com.example.eventjoy.R;
 import com.example.eventjoy.activities.CreateValorationsActivity;
-import com.example.eventjoy.activities.EditMemberActivity;
-import com.example.eventjoy.activities.MemberMainActivity;
-import com.example.eventjoy.activities.SignUpActivity;
 import com.example.eventjoy.adapters.ValorationAdapter;
-import com.example.eventjoy.enums.Provider;
-import com.example.eventjoy.enums.Role;
 import com.example.eventjoy.models.Member;
 import com.example.eventjoy.models.Valoration;
 import com.example.eventjoy.services.ValorationService;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -101,23 +87,21 @@ public class ListValorationsFragment extends Fragment {
         }
 
 
-        valorationService.getByRatedUserId(ratedUserId, new EventListener<QuerySnapshot>() {
+        valorationService.getByRatedUserId(ratedUserId, new ValueEventListener() {
             @Override
-            public void onEvent(@Nullable QuerySnapshot snapshots, @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    Toast.makeText(getContext(), "Error querying database " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 valorationList.clear();
 
-                for (DocumentSnapshot doc : snapshots) {
-                    Valoration valoration = doc.toObject(Valoration.class);
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Valoration valoration = snapshot.getValue(Valoration.class);
                     valorationList.add(valoration);
                 }
-
                 valorationAdapter = new ValorationAdapter(getContext(), valorationList);
                 lvValorations.setAdapter(valorationAdapter);
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(getActivity().getApplication(), "Error querying database " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

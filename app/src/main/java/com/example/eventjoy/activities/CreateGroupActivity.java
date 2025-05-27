@@ -17,9 +17,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.Spinner;
 import android.widget.Toast;
-
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -32,25 +30,20 @@ import androidx.core.content.FileProvider;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-
 import com.cloudinary.android.callback.ErrorInfo;
 import com.cloudinary.android.callback.UploadCallback;
 import com.example.eventjoy.R;
-import com.example.eventjoy.enums.Role;
 import com.example.eventjoy.enums.Visibility;
 import com.example.eventjoy.fragments.ProgressDialogFragment;
 import com.example.eventjoy.manager.CloudinaryManager;
 import com.example.eventjoy.models.Group;
-import com.example.eventjoy.models.Member;
 import com.example.eventjoy.models.UserGroup;
 import com.example.eventjoy.services.GroupService;
 import com.example.eventjoy.services.UserGroupService;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
-
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -223,41 +216,21 @@ public class CreateGroupActivity extends AppCompatActivity {
     }
 
     private void createGroup(Group g) {
-        groupService.insertGroup(g, new OnSuccessListener<String>() {
-            @Override
-            public void onSuccess(String id) {
-                String formattedToday = LocalDate.now().format(formatterDate);
-                LocalDate today = LocalDate.parse(formattedToday, formatterDate);
+        String groupId = groupService.insertGroup(g);
 
-                UserGroup us = new UserGroup();
-                us.setGroupId(id);
-                us.setAdmin(true);
-                us.setJoinedAt(today.toString());
-                us.setUserId(sharedPreferences.getString("id", ""));
-                us.setNotificationsEnabled(true);
+        String formattedToday = LocalDate.now().format(formatterDate);
+        LocalDate today = LocalDate.parse(formattedToday, formatterDate);
 
-                userGroupService.insertUserGroup(us, new OnSuccessListener<String>() {
-                    @Override
-                    public void onSuccess(String id) {
-                        Toast.makeText(getApplicationContext(), "Group successfully created",Toast.LENGTH_SHORT).show();
-                        progressDialog.dismiss();
-                        finish();
-                    }
-                }, new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        progressDialog.dismiss();
-                        Toast.makeText(getApplicationContext(), "Error querying database " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                });
-            }
-        }, new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                progressDialog.dismiss();
-                Toast.makeText(getApplicationContext(), "Error querying database " + e.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
+        UserGroup us = new UserGroup();
+        us.setGroupId(groupId);
+        us.setAdmin(true);
+        us.setJoinedAt(today.toString());
+        us.setUserId(sharedPreferences.getString("id", ""));
+        us.setNotificationsEnabled(true);
+        userGroupService.insertUserGroup(us);
+        Toast.makeText(getApplicationContext(), "Group successfully created",Toast.LENGTH_SHORT).show();
+        progressDialog.dismiss();
+        finish();
     }
 
     private void saveIconGroup(Group g) {

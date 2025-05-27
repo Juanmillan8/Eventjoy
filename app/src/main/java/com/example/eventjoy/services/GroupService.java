@@ -2,68 +2,130 @@ package com.example.eventjoy.services;
 
 import android.content.Context;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.example.eventjoy.callbacks.GroupsCallback;
+import com.example.eventjoy.callbacks.SimpleCallback;
+import com.example.eventjoy.models.Event;
 import com.example.eventjoy.models.Group;
+import com.example.eventjoy.models.Report;
+import com.example.eventjoy.models.UserGroup;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class GroupService {
-    private FirebaseFirestore mFirestore;
+
+    private DatabaseReference databaseReferenceGroups;
+    private DatabaseReference databaseReferenceUserGroups;
+    private DatabaseReference databaseReferenceMessage;
+    private DatabaseReference databaseReferenceInvitation;
+    private DatabaseReference databaseReferenceReport;
+    private DatabaseReference databaseReferenceEvent;
 
     public GroupService(Context context) {
-        mFirestore = FirebaseFirestore.getInstance();
+        databaseReferenceGroups = FirebaseDatabase.getInstance().getReference().child("groups");
+        databaseReferenceUserGroups = FirebaseDatabase.getInstance().getReference().child("userGroups");
+        databaseReferenceMessage = FirebaseDatabase.getInstance().getReference().child("messages");
+        databaseReferenceInvitation = FirebaseDatabase.getInstance().getReference().child("invitations");
+        databaseReferenceReport = FirebaseDatabase.getInstance().getReference().child("reports");
+        databaseReferenceEvent = FirebaseDatabase.getInstance().getReference().child("events");
     }
 
-    public void insertGroup(Group g, OnSuccessListener<String> successListener, OnFailureListener failureListener) {
-        String id = mFirestore.collection("groups").document().getId();
-        g.setId(id);
-        mFirestore.collection("groups").document(id).set(g).addOnSuccessListener(new OnSuccessListener<Void>() {
+    public String insertGroup(Group g) {
+        DatabaseReference newReference = databaseReferenceGroups.push();
+        g.setId(newReference.getKey());
+
+        newReference.setValue(g);
+        return g.getId();
+    }
+
+    public void deleteGroup(Group group) {
+        databaseReferenceGroups.child(group.getId()).removeValue();
+
+        databaseReferenceUserGroups.orderByChild("groupId").equalTo(group.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onSuccess(Void unused) {
-                successListener.onSuccess(id);
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        snapshot.getRef().removeValue();
+                    }
+                }
             }
-        }).addOnFailureListener(new OnFailureListener() {
             @Override
-            public void onFailure(@NonNull Exception e) {
-                failureListener.onFailure(e);
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Error - GroupService - deleteGroup", error.getMessage());
             }
         });
-    }
 
-    public ListenerRegistration listenToAllGroups(GroupsCallback callback) {
-        return mFirestore.collection("groups").addSnapshotListener(new EventListener<QuerySnapshot>() {
+        databaseReferenceMessage.orderByChild("groupId").equalTo(group.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    callback.onFailure(e);
-                    return;
-                }
-                Log.i("METODOALGROUPS", "METODOALGROUPS");
-                if (queryDocumentSnapshots != null) {
-                    List<Group> groups = new ArrayList<>();
-                    for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
-                        Group group = doc.toObject(Group.class);
-                        if (group != null) {
-                            group.setId(doc.getId()); // Set ID manualmente si lo necesitas
-                            groups.add(group);
-                        }
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        snapshot.getRef().removeValue();
                     }
-                    Log.i("METODOALGROUPSLISTADO", groups.toString());
-                    callback.onSuccess(groups);
                 }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Error - GroupService - deleteGroup", error.getMessage());
+            }
+        });
+
+        databaseReferenceInvitation.orderByChild("groupId").equalTo(group.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        snapshot.getRef().removeValue();
+                    }
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Error - GroupService - deleteGroup", error.getMessage());
+            }
+        });
+
+        databaseReferenceReport.orderByChild("groupId").equalTo(group.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        Report report = snapshot.getValue(Report.class);
+                        report.setGroupId(null);
+                        databaseReferenceReport.child(report.getId()).setValue(report);
+                    }
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Error - GroupService - deleteGroup", error.getMessage());
+            }
+        });
+
+        databaseReferenceEvent.orderByChild("groupId").equalTo(group.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        Event event = snapshot.getValue(Event.class);
+                        event.setGroupId(null);
+                        databaseReferenceEvent.child(event.getId()).setValue(event);
+                    }
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Error - GroupService - deleteGroup", error.getMessage());
             }
         });
     }

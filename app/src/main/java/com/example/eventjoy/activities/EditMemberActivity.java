@@ -6,8 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -38,8 +36,6 @@ import com.cloudinary.android.callback.ErrorInfo;
 import com.cloudinary.android.callback.UploadCallback;
 import com.example.eventjoy.R;
 import com.example.eventjoy.enums.Provider;
-import com.example.eventjoy.enums.Role;
-import com.example.eventjoy.fragments.DetailsMemberFragment;
 import com.example.eventjoy.fragments.ProgressDialogFragment;
 import com.example.eventjoy.manager.CloudinaryManager;
 import com.example.eventjoy.models.Member;
@@ -49,18 +45,15 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -73,8 +66,7 @@ public class EditMemberActivity extends AppCompatActivity {
 
     private Bundle getMember;
     private Member memberEdit;
-    private TextInputEditText textInputEditTextName, textInputEditTextSurname, textInputEditTextUsername, textInputEditTextDni,
-            textInputEditTextPhone, textInputEditTextBirthdate, textInputEditTextEmail;
+    private TextInputEditText textInputEditTextName, textInputEditTextSurname, textInputEditTextUsername, textInputEditTextDni, textInputEditTextPhone, textInputEditTextBirthdate, textInputEditTextEmail;
     private SharedPreferences.Editor editor;
     private SharedPreferences sharedPreferences;
     private ImageView profileIcon, btnDeleteImage, btnCamera;
@@ -228,7 +220,7 @@ public class EditMemberActivity extends AppCompatActivity {
                 if (data != null) {
                     mImageUri = data.getData();
                     profileIcon.setImageURI(mImageUri);
-                    changedImage=true;
+                    changedImage = true;
                 }
             }
         }
@@ -243,7 +235,7 @@ public class EditMemberActivity extends AppCompatActivity {
         return goBack();
     }
 
-    private boolean goBack(){
+    private boolean goBack() {
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
             Intent mainIntent = new Intent(this, MainActivity.class);
             startActivity(mainIntent);
@@ -271,44 +263,46 @@ public class EditMemberActivity extends AppCompatActivity {
             } else {
                 initializeDialog();
 
-                memberService.checkRepeatedDNI(textInputEditTextDni.getText().toString(), new OnSuccessListener<QuerySnapshot>() {
+                memberService.checkRepeatedDNI(textInputEditTextDni.getText().toString(), new ValueEventListener() {
                     @Override
-                    public void onSuccess(QuerySnapshot snapshot) {
-                        if (!textInputEditTextDni.getText().toString().equals(memberEdit.getDni().toString()) && !snapshot.isEmpty()) {
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (!textInputEditTextDni.getText().toString().equals(memberEdit.getDni().toString()) && snapshot.exists()) {
                             progressDialog.dismiss();
                             Toast.makeText(getApplicationContext(), "The DNI " + textInputEditTextDni.getText().toString() + " is already registered, try a different one", Toast.LENGTH_LONG).show();
                         } else {
-                            memberService.checkRepeatedUsername(textInputEditTextUsername.getText().toString(), new OnSuccessListener<QuerySnapshot>() {
+                            memberService.checkRepeatedUsername(textInputEditTextUsername.getText().toString(), new ValueEventListener() {
                                 @Override
-                                public void onSuccess(QuerySnapshot snapshot) {
-                                    if (!textInputEditTextUsername.getText().toString().equals(memberEdit.getUsername().toString()) && !snapshot.isEmpty()) {
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    if (!textInputEditTextUsername.getText().toString().equals(memberEdit.getUsername().toString()) && snapshot.exists()) {
                                         progressDialog.dismiss();
                                         Toast.makeText(getApplicationContext(), "The username " + textInputEditTextUsername.getText().toString() + " is already registered, try a different one", Toast.LENGTH_LONG).show();
-                                    }else{
+                                    } else {
                                         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
                                             saveProfileImage();
-                                        }else{
+                                        } else {
                                             Intent showPoPup = new Intent(getApplicationContext(), PopupReauthenticateActivity.class);
                                             startActivity(showPoPup);
                                             progressDialog.dismiss();
                                         }
                                     }
                                 }
-                            }, new OnFailureListener() {
+
                                 @Override
-                                public void onFailure(@NonNull Exception e) {
+                                public void onCancelled(@NonNull DatabaseError error) {
+                                    //Se cierra la ventana de carga
                                     progressDialog.dismiss();
-                                    Toast.makeText(getApplicationContext(), "Error querying Firestore: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getApplicationContext(), "Error querying database " + error.getMessage(), Toast.LENGTH_SHORT).show();
                                 }
                             });
                         }
 
                     }
-                }, new OnFailureListener() {
+
                     @Override
-                    public void onFailure(@NonNull Exception e) {
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        //Se cierra la ventana de carga
                         progressDialog.dismiss();
-                        Toast.makeText(getApplicationContext(), "Error querying database " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), "Error querying database " + error.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -321,8 +315,8 @@ public class EditMemberActivity extends AppCompatActivity {
         progressDialog.show(getSupportFragmentManager(), "progressDialog");
     }
 
-    private void saveProfileImage(){
-        if(changedImage){
+    private void saveProfileImage() {
+        if (changedImage) {
             CloudinaryManager.uploadImage(getApplicationContext(), mImageUri, new UploadCallback() {
                 @Override
                 public void onStart(String requestId) {
@@ -338,6 +332,7 @@ public class EditMemberActivity extends AppCompatActivity {
                     memberEdit.setPhoto(imageUrl);
                     editMember();
                 }
+
                 @Override
                 public void onError(String requestId, ErrorInfo error) {
                     progressDialog.dismiss();
@@ -348,7 +343,7 @@ public class EditMemberActivity extends AppCompatActivity {
                 public void onReschedule(String requestId, ErrorInfo error) {
                 }
             });
-        }else{
+        } else {
             memberEdit.setPhoto(null);
             editMember();
         }
@@ -363,20 +358,20 @@ public class EditMemberActivity extends AppCompatActivity {
         memberEdit.setName(textInputEditTextName.getText().toString());
 
         user.updateEmail(textInputEditTextEmail.getText().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                    if (task.isSuccessful()) {
-                        memberService.updateMember(memberEdit);
-                        Toast.makeText(getApplicationContext(), "Successfully edited member", Toast.LENGTH_SHORT).show();
-                        editor = sharedPreferences.edit();
-                        editor.putString("email", textInputEditTextEmail.getText().toString());
-                        editor.apply();
-                        Intent mainMemberIntent = new Intent(getApplicationContext(), MemberMainActivity.class);
-                        startActivity(mainMemberIntent);
-                        finish();
-                        progressDialog.dismiss();
-                    }
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    memberService.updateMember(memberEdit);
+                    Toast.makeText(getApplicationContext(), "Successfully edited member", Toast.LENGTH_SHORT).show();
+                    editor = sharedPreferences.edit();
+                    editor.putString("email", textInputEditTextEmail.getText().toString());
+                    editor.apply();
+                    Intent mainMemberIntent = new Intent(getApplicationContext(), MemberMainActivity.class);
+                    startActivity(mainMemberIntent);
+                    finish();
+                    progressDialog.dismiss();
                 }
+            }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
@@ -412,7 +407,7 @@ public class EditMemberActivity extends AppCompatActivity {
         });
     }
 
-    private void loadComponents(){
+    private void loadComponents() {
         user = FirebaseAuth.getInstance().getCurrentUser();
         changedImage = false;
         formatterDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -443,10 +438,8 @@ public class EditMemberActivity extends AppCompatActivity {
         textInputEditTextEmail.setText(sharedPreferences.getString("email", ""));
 
         if (memberEdit.getPhoto() != null && !memberEdit.getPhoto().isEmpty()) {
-            Picasso.get()
-                    .load(memberEdit.getPhoto())
-                    .into(profileIcon);
-            changedImage=true;
+            Picasso.get().load(memberEdit.getPhoto()).into(profileIcon);
+            changedImage = true;
         }
 
         if (memberEdit.getProvider().equals(Provider.GOOGLE)) {
@@ -454,7 +447,7 @@ public class EditMemberActivity extends AppCompatActivity {
         }
     }
 
-    private void loadServices(){
+    private void loadServices() {
         memberService = new MemberService(getApplicationContext());
     }
 }

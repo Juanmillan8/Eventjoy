@@ -160,10 +160,12 @@
         app:layout_constraintStart_toStartOf="parent">
 
         <LinearLayout
+            android:id="@+id/linearLayoutEditGroup"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:layout_marginLeft="10dp"
+            android:visibility="gone"
             android:orientation="horizontal">
 
 
@@ -185,10 +187,12 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/linearLayoutDeleteGroup"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:layout_marginLeft="10dp"
+            android:visibility="gone"
             android:orientation="horizontal">
 
 

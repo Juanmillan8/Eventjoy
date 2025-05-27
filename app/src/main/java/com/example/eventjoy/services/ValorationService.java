@@ -1,45 +1,32 @@
 package com.example.eventjoy.services;
-
 import android.content.Context;
-
 import androidx.annotation.NonNull;
-
-import com.example.eventjoy.models.Member;
 import com.example.eventjoy.models.Valoration;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 public class ValorationService {
 
-    private CollectionReference mFirestore;
+    private DatabaseReference databaseReferenceValorations;
 
     public ValorationService(Context context) {
-        mFirestore = FirebaseFirestore.getInstance().collection("valorations");
+        databaseReferenceValorations = FirebaseDatabase.getInstance().getReference().child("valorations");
     }
 
-    public void insertValoration(Valoration v, OnSuccessListener<String> successListener, OnFailureListener failureListener) {
-        String id = mFirestore.document().getId();
-        v.setId(id);
-        mFirestore.document(id).set(v).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void unused) {
-                successListener.onSuccess(id);
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                failureListener.onFailure(e);
-            }
-        });
+    public String insertValoration(Valoration v) {
+        DatabaseReference newReference = databaseReferenceValorations.push();
+        v.setId(newReference.getKey());
+
+        newReference.setValue(v);
+        return v.getId();
     }
 
-    public void getByRatedUserId(String ratedUserId, EventListener<QuerySnapshot> eventListener) {
-        mFirestore
-                .whereEqualTo("ratedUserId", ratedUserId)
-                .addSnapshotListener(eventListener);
+    public void getByRatedUserId(String ratedUserId, ValueEventListener listener) {
+        Query query = databaseReferenceValorations.orderByChild("ratedUserId").equalTo(ratedUserId);
+        query.addValueEventListener(listener);
     }
 }

@@ -13,18 +13,47 @@ import androidx.annotation.Nullable;
 
 import com.example.eventjoy.R;
 import com.example.eventjoy.models.Group;
+import com.example.eventjoy.models.Member;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GroupAdapter extends ArrayAdapter<Group> {
 
     private List<Group> groups;
+    private List<Group> originalList;
 
     //Constructor del adapter
     public GroupAdapter(Context context, List<Group> groups){
         super(context, 0, groups);
         this.groups = groups;
+        originalList = new ArrayList<>();
+        originalList.addAll(groups);
+    }
+
+    public void filter(final String txtSearch) {
+        int length = txtSearch.length();
+        if (length == 0) {
+            groups.clear();
+            groups.addAll(originalList);
+        } else {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                List<Group> collecion = groups.stream()
+                        .filter(i -> i.getTitle().toLowerCase().contains(txtSearch.toLowerCase()))
+                        .collect(Collectors.toList());
+                groups.clear();
+                groups.addAll(collecion);
+            } else {
+                for (Group g : originalList) {
+                    if (g.getTitle().toLowerCase().contains(txtSearch.toLowerCase())) {
+                        groups.add(g);
+                    }
+                }
+            }
+        }
+        notifyDataSetChanged();
     }
 
     @NonNull
