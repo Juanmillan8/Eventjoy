@@ -12,7 +12,7 @@ public class Report extends DomainEntity{
     private String reportedUserId;
     private String reporterUserId;
     private String groupId;
-    private LocalDateTime reportedAt;
+    private String reportedAt;
     private ReportStatus reportStatus;
 
     public Report() {
@@ -59,11 +59,11 @@ public class Report extends DomainEntity{
         this.groupId = groupId;
     }
 
-    public LocalDateTime getReportedAt() {
+    public String getReportedAt() {
         return reportedAt;
     }
 
-    public void setReportedAt(LocalDateTime reportedAt) {
+    public void setReportedAt(String reportedAt) {
         this.reportedAt = reportedAt;
     }
 
@@ -83,7 +83,7 @@ public class Report extends DomainEntity{
                 ", reportedUserId='" + reportedUserId + '\'' +
                 ", reporterUserId='" + reporterUserId + '\'' +
                 ", groupId='" + groupId + '\'' +
-                ", reportedAt=" + reportedAt +
+                ", reportedAt='" + reportedAt + '\'' +
                 ", reportStatus=" + reportStatus +
                 '}';
     }

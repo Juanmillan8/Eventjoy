@@ -20,6 +20,8 @@ import androidx.fragment.app.Fragment;
 import com.example.eventjoy.R;
 import com.example.eventjoy.activities.CreateGroupActivity;
 import com.example.eventjoy.activities.GroupActivity;
+import com.example.eventjoy.activities.PopupJoinGroup;
+import com.example.eventjoy.activities.PopupReauthenticateActivity;
 import com.example.eventjoy.adapters.GroupAdapter;
 import com.example.eventjoy.adapters.ValorationAdapter;
 import com.example.eventjoy.callbacks.GroupsCallback;
@@ -76,8 +78,10 @@ public class HomeMemberFragment extends Fragment implements SearchView.OnQueryTe
                         groupMainIntent.putExtra("group", group);
                         groupMainIntent.putExtra("userGroupRole", userGroupRole.name());
                         startActivity(groupMainIntent);
-                    }else{
-                        //TODO PONER QUE TENGO QUE UNIRME AL GRUPO SI QUIERO ACCEDER A EL
+                    }else if(userGroupRole.name().equals("NO_PARTICIPANT")){
+                        Intent showPoPup = new Intent(getContext(), PopupJoinGroup.class);
+                        showPoPup.putExtra("group", group);
+                        startActivity(showPoPup);
                     }
                 }
 
@@ -142,6 +146,7 @@ public class HomeMemberFragment extends Fragment implements SearchView.OnQueryTe
     }
 
     private void startListeningMyGroups() {
+        Log.i("migroups", "migroups");
         userGroupService.stopListening();
         userGroupService.getByMemberId(idCurrentUser, new GroupsCallback() {
             @Override

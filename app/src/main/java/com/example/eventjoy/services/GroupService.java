@@ -8,6 +8,7 @@ import com.example.eventjoy.callbacks.GroupsCallback;
 import com.example.eventjoy.callbacks.SimpleCallback;
 import com.example.eventjoy.models.Event;
 import com.example.eventjoy.models.Group;
+import com.example.eventjoy.models.Member;
 import com.example.eventjoy.models.Report;
 import com.example.eventjoy.models.UserGroup;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -47,6 +48,10 @@ public class GroupService {
         return g.getId();
     }
 
+    public void updateGroup(Group g) {
+        databaseReferenceGroups.child(g.getId()).setValue(g);
+    }
+
     public void deleteGroup(Group group) {
         databaseReferenceGroups.child(group.getId()).removeValue();
 
@@ -70,6 +75,7 @@ public class GroupService {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()){
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        Log.i("FORMESSAGES", "FORMESSAGES");
                         snapshot.getRef().removeValue();
                     }
                 }

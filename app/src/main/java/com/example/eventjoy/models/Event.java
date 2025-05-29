@@ -7,8 +7,8 @@ import java.time.LocalDateTime;
 public class Event extends DomainEntity{
 
     private String title;
-    private LocalDateTime startDateAndTime;
-    private LocalDateTime endDateAndTime;
+    private String startDateAndTime;
+    private String endDateAndTime;
     private String description;
     private int maxParticipants;
     private Address address;
@@ -27,19 +27,19 @@ public class Event extends DomainEntity{
         this.title = title;
     }
 
-    public LocalDateTime getStartDateAndTime() {
+    public String getStartDateAndTime() {
         return startDateAndTime;
     }
 
-    public void setStartDateAndTime(LocalDateTime startDateAndTime) {
+    public void setStartDateAndTime(String startDateAndTime) {
         this.startDateAndTime = startDateAndTime;
     }
 
-    public LocalDateTime getEndDateAndTime() {
+    public String getEndDateAndTime() {
         return endDateAndTime;
     }
 
-    public void setEndDateAndTime(LocalDateTime endDateAndTime) {
+    public void setEndDateAndTime(String endDateAndTime) {
         this.endDateAndTime = endDateAndTime;
     }
 
@@ -87,8 +87,8 @@ public class Event extends DomainEntity{
     public String toString() {
         return "Event{" +
                 "title='" + title + '\'' +
-                ", startDateAndTime=" + startDateAndTime +
-                ", endDateAndTime=" + endDateAndTime +
+                ", startDateAndTime='" + startDateAndTime + '\'' +
+                ", endDateAndTime='" + endDateAndTime + '\'' +
                 ", description='" + description + '\'' +
                 ", maxParticipants=" + maxParticipants +
                 ", address=" + address +

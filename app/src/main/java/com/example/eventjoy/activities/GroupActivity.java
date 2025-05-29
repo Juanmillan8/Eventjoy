@@ -52,6 +52,7 @@ public class GroupActivity extends AppCompatActivity {
                 detailsGroupIntent.putExtra("group", group);
                 detailsGroupIntent.putExtra("userGroupRole", userGroupRole);
                 startActivity(detailsGroupIntent);
+                finish();
             }
         });
 

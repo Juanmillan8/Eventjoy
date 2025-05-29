@@ -1,10 +1,13 @@
 package com.example.eventjoy.services;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import com.example.eventjoy.activities.MemberMainActivity;
 import com.example.eventjoy.callbacks.GroupsCallback;
 import com.example.eventjoy.callbacks.MembersCallback;
 import com.example.eventjoy.callbacks.SimpleCallback;
@@ -52,25 +55,49 @@ public class UserGroupService {
         return u.getId();
     }
 
+    public void deleteUserGroup(String groupId, String userId, SimpleCallback callback) {
+        databaseReferenceUserGroups.orderByChild("userId").equalTo(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                UserGroup userGroup = new UserGroup();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    userGroup = snapshot.getValue(UserGroup.class);
+                    if (userGroup.getGroupId().toString().equals(groupId.toString())) {
+                        break;
+                    }
+
+                }
+                databaseReferenceUserGroups.child(userGroup.getId()).removeValue();
+                callback.onSuccess("You have successfully left the group");
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Error - AssessmentService - checkAssessmentMade", error.getMessage());
+                callback.onCancelled("Error querying the database: " + error.getMessage());
+            }
+        });
+    }
+
     public void checkUserGroupRole(String groupId, String userId, UserGroupRoleCallback callback) {
         databaseReferenceUserGroups.orderByChild("userId").equalTo(userId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
+                if (dataSnapshot.exists()) {
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         UserGroup userGroup = snapshot.getValue(UserGroup.class);
                         if (userGroup.getGroupId().equals(groupId)) {
-                            if(userGroup.getAdmin()){
+                            if (userGroup.getAdmin()) {
                                 callback.onSuccess(UserGroupRole.ADMIN);
                                 return;
-                            }else{
+                            } else {
                                 callback.onSuccess(UserGroupRole.PARTICIPANT);
                                 return;
                             }
                         }
                     }
                     callback.onSuccess(UserGroupRole.NO_PARTICIPANT);
-                }else{
+                } else {
                     callback.onSuccess(UserGroupRole.NO_PARTICIPANT);
                 }
             }
@@ -109,7 +136,7 @@ public class UserGroupService {
                         List<Member> members = new ArrayList<>();
                         for (DataSnapshot memberSnap : snapshot.getChildren()) {
                             Member member = memberSnap.getValue(Member.class);
-                            if(userIds.contains(member.getId())){
+                            if (userIds.contains(member.getId())) {
                                 members.add(member);
                             }
                         }
@@ -143,9 +170,7 @@ public class UserGroupService {
                 List<String> userGroupIds = new ArrayList<>();
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     UserGroup userGroup = snapshot.getValue(UserGroup.class);
-                    if (!userGroup.getUserId().equals(userId)) {
-                        userGroupIds.add(userGroup.getGroupId());
-                    }
+                    userGroupIds.add(userGroup.getGroupId());
                 }
 
                 if (groupsListener != null) {
@@ -160,8 +185,7 @@ public class UserGroupService {
                         for (DataSnapshot groupSnap : snapshot.getChildren()) {
                             Group group = groupSnap.getValue(Group.class);
                             if (!group.getVisibility().equals(Visibility.PRIVATE)) {
-                                if (userGroupIds.contains(group.getId())) {
-                                    Log.i("ADIO", group.getId());
+                                if (!userGroupIds.contains(group.getId())) {
                                     groups.add(group);
                                 }
                             }
@@ -182,7 +206,7 @@ public class UserGroupService {
                 callback.onFailure(error.toException());
             }
         };
-        databaseReferenceUserGroups.addValueEventListener(userGroupsListener);
+        databaseReferenceUserGroups.orderByChild("userId").equalTo(userId).addValueEventListener(userGroupsListener);
     }
 
 

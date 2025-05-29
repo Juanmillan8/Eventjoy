@@ -7,7 +7,7 @@ public class Invitation extends DomainEntity{
     private String invitedUserId;
     private String inviterUserId;
     private String groupId;
-    private LocalDateTime invitedAt;
+    private String invitedAt;
 
     public Invitation() {
         super();
@@ -37,11 +37,11 @@ public class Invitation extends DomainEntity{
         this.groupId = groupId;
     }
 
-    public LocalDateTime getInvitedAt() {
+    public String getInvitedAt() {
         return invitedAt;
     }
 
-    public void setInvitedAt(LocalDateTime invitedAt) {
+    public void setInvitedAt(String invitedAt) {
         this.invitedAt = invitedAt;
     }
 
@@ -51,7 +51,7 @@ public class Invitation extends DomainEntity{
                 "invitedUserId='" + invitedUserId + '\'' +
                 ", inviterUserId='" + inviterUserId + '\'' +
                 ", groupId='" + groupId + '\'' +
-                ", invitedAt=" + invitedAt +
+                ", invitedAt='" + invitedAt + '\'' +
                 '}';
     }
 }
