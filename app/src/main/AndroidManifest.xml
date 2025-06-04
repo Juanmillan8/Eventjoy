@@ -22,9 +22,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Eventjoy">
         <activity
+            android:name=".activities.EditEventActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.EventDetailsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.CreateEventsActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.PopupJoinGroup"
             android:exported="false"
-            android:theme="@style/Theme.Eventjoy.NoActionBar"/>
+            android:theme="@style/Theme.Eventjoy.NoActionBar" />
         <activity
             android:name=".activities.ModifyGroupActivity"
             android:exported="false" />

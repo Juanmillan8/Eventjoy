@@ -4,19 +4,10 @@ public class UserEvent extends DomainEntity{
 
     private String userId;
     private String eventId;
-    private Boolean isCreator;
     private Boolean notificationsEnabled;
 
     public UserEvent() {
         super();
-    }
-
-    public Boolean getCreator() {
-        return isCreator;
-    }
-
-    public void setCreator(Boolean creator) {
-        isCreator = creator;
     }
 
     public String getUserId() {
@@ -48,7 +39,6 @@ public class UserEvent extends DomainEntity{
         return "UserEvent{" +
                 "userId='" + userId + '\'' +
                 ", eventId='" + eventId + '\'' +
-                ", isCreator=" + isCreator +
                 ", notificationsEnabled=" + notificationsEnabled +
                 '}';
     }

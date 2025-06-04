@@ -8,4 +8,7 @@
     <color name="grayBluish">#ECEFF1</color>
     <color name="lightGray">#E0E0E0</color>
     <color name="errorRed">#ff6b6b</color>
+    <color name="eventFinished">#9E9E9E</color>
+    <color name="eventScheduled">#2196F3</color>
+    <color name="eventOngoing">#4CAF50</color>
 </resources>

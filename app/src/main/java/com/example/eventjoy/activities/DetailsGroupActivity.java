@@ -108,33 +108,23 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
         linearLayoutDeleteGroup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                eventService.checkOngoingEvent(group.getId(), new ValueEventListener() {
+                eventService.checkOngoingEvent(group.getId(), new SimpleCallback() {
                     @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        Boolean ongoingEvent = false;
-                        if (dataSnapshot.exists()) {
-                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                Event event = snapshot.getValue(Event.class);
-                                if (event.getStatus().name().equals("ONGOING")) {
-                                    ongoingEvent = true;
-                                    break;
-                                }
-                            }
-                            if (!ongoingEvent) {
-                                groupService.deleteGroup(group);
-                                Toast.makeText(getApplicationContext(), "Successfully deleted group", Toast.LENGTH_SHORT).show();
-                                Intent mainMemberActivity = new Intent(getApplicationContext(), MemberMainActivity.class);
-                                startActivity(mainMemberActivity);
-                                finish();
-                            } else {
-                                Toast.makeText(getApplicationContext(), "There are events going on for this group, try again later", Toast.LENGTH_SHORT).show();
-                            }
+                    public void onSuccess(String onSuccess) {
+                        if(onSuccess.equals("true")){
+                            Toast.makeText(getApplicationContext(), "There are events going on for this group, try again later", Toast.LENGTH_SHORT).show();
+                        }else{
+                            groupService.deleteGroup(group);
+                            Toast.makeText(getApplicationContext(), "Successfully deleted group", Toast.LENGTH_SHORT).show();
+                            Intent mainMemberActivity = new Intent(getApplicationContext(), MemberMainActivity.class);
+                            startActivity(mainMemberActivity);
+                            finish();
                         }
                     }
 
                     @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Toast.makeText(getApplicationContext(), "Error querying database: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    public void onCancelled(String onCancelledMessage) {
+                        Toast.makeText(getApplicationContext(), onCancelledMessage, Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -153,20 +143,12 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
         linearLayoutLeaveTheGroup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.i("pulsado", "pulsado");
-                eventService.checkOngoingEvent(group.getId(), new ValueEventListener() {
+                eventService.isUserRegisteredInOngoingEvent(group.getId(), idCurrentUser, new SimpleCallback() {
                     @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        Boolean ongoingEvent = false;
-                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                            Event event = snapshot.getValue(Event.class);
-                            if (event.getStatus().name().equals("ONGOING")) {
-                                ongoingEvent = true;
-                                break;
-                            }
-                        }
-                        if (!ongoingEvent) {
-
+                    public void onSuccess(String onSuccess) {
+                        if(onSuccess.equals("true")){
+                            Toast.makeText(getApplicationContext(), "You cannot leave the group while participating in an ongoing event.", Toast.LENGTH_SHORT).show();
+                        }else{
                             if (userGroupRole.equals("ADMIN")) {
                                 if (memberList.isEmpty()) {
                                     leaveGroup();
@@ -199,21 +181,16 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
                             } else {
                                 leaveGroup();
                             }
-
-                        } else {
-                            Toast.makeText(getApplicationContext(), "You cannot leave the group while participating in an ongoing event.", Toast.LENGTH_SHORT).show();
                         }
                     }
 
                     @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Toast.makeText(getApplicationContext(), "Error querying database: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    public void onCancelled(String onCancelledMessage) {
+                        Toast.makeText(getApplicationContext(), onCancelledMessage, Toast.LENGTH_SHORT).show();
                     }
                 });
             }
         });
-
-
         svMembers.setOnQueryTextListener(this);
     }
 

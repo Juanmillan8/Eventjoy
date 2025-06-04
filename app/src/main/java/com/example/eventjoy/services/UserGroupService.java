@@ -67,13 +67,14 @@ public class UserGroupService {
                     }
 
                 }
+
                 databaseReferenceUserGroups.child(userGroup.getId()).removeValue();
                 callback.onSuccess("You have successfully left the group");
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("Error - AssessmentService - checkAssessmentMade", error.getMessage());
+                Log.e("Error - UserGroupService - deleteUserGroup", error.getMessage());
                 callback.onCancelled("Error querying the database: " + error.getMessage());
             }
         });

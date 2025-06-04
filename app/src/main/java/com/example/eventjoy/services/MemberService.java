@@ -2,54 +2,134 @@ package com.example.eventjoy.services;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
+
+import com.example.eventjoy.callbacks.MembersCallback;
+import com.example.eventjoy.models.Group;
 import com.example.eventjoy.models.Member;
+import com.example.eventjoy.models.UserEvent;
+import com.example.eventjoy.models.UserGroup;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MemberService {
 
-    private DatabaseReference database;
+    private DatabaseReference databaseReferenceMembers;
+    private DatabaseReference databaseReferenceUserEvents;
+
+    private ValueEventListener userEventListener;
+    private ValueEventListener memberListener;
 
     public MemberService(Context context) {
-        database = FirebaseDatabase.getInstance().getReference().child("members");
+        databaseReferenceMembers = FirebaseDatabase.getInstance().getReference().child("members");
+        databaseReferenceUserEvents = FirebaseDatabase.getInstance().getReference().child("userEvents");
     }
 
     public String insertMember(Member m) {
-        DatabaseReference newReference = database.push();
+        DatabaseReference newReference = databaseReferenceMembers.push();
         m.setId(newReference.getKey());
 
         newReference.setValue(m);
         return m.getId();
     }
+
+    public void getByEventId(String eventId, MembersCallback callback) {
+        if (userEventListener != null) {
+            databaseReferenceUserEvents.removeEventListener(userEventListener);
+        }
+
+        userEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                List<String> userIds = new ArrayList<>();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    UserEvent userEvent = snapshot.getValue(UserEvent.class);
+                        userIds.add(userEvent.getUserId());
+                }
+
+                if (userIds.isEmpty()) {
+                    callback.onSuccess(new ArrayList<>());
+                    return;
+                }
+
+                if (memberListener != null) {
+                    databaseReferenceMembers.removeEventListener(memberListener);
+                }
+
+                memberListener = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        List<Member> members = new ArrayList<>();
+
+                        for (DataSnapshot groupSnap : snapshot.getChildren()) {
+                            Member member = groupSnap.getValue(Member.class);
+                            if (member != null && userIds.contains(member.getId())) {
+                                members.add(member);
+                            }
+                        }
+                        callback.onSuccess(members);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        callback.onFailure(error.toException());
+                    }
+                };
+                databaseReferenceMembers.addValueEventListener(memberListener);
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                callback.onFailure(error.toException());
+            }
+        };
+        databaseReferenceUserEvents.orderByChild("eventId").equalTo(eventId).addValueEventListener(userEventListener);
+    }
+
     public void getMemberById(String memberId, ValueEventListener listener) {
-        Query query = database.orderByChild("id").equalTo(memberId);
+        Query query = databaseReferenceMembers.orderByChild("id").equalTo(memberId);
         query.addListenerForSingleValueEvent(listener);
     }
 
     public void getMemberByUid(String memberUid, ValueEventListener listener) {
-        Query query = database.orderByChild("userAccountId").equalTo(memberUid);
+        Query query = databaseReferenceMembers.orderByChild("userAccountId").equalTo(memberUid);
         query.addListenerForSingleValueEvent(listener);
     }
 
     public void checkRepeatedDNI(String patientDNI, ValueEventListener listener) {
-        Query query = database.orderByChild("dni").equalTo(patientDNI);
+        Query query = databaseReferenceMembers.orderByChild("dni").equalTo(patientDNI);
         query.addListenerForSingleValueEvent(listener);
     }
 
     public void checkRepeatedUsername(String patientUsername, ValueEventListener listener){
-        Query query = database.orderByChild("username").equalTo(patientUsername);
+        Query query = databaseReferenceMembers.orderByChild("username").equalTo(patientUsername);
         query.addListenerForSingleValueEvent(listener);
     }
 
     public void updateMember(Member m) {
-        database.child(m.getId()).setValue(m);
+        databaseReferenceMembers.child(m.getId()).setValue(m);
+    }
+
+    public void stopListening() {
+        if (userEventListener != null) {
+            databaseReferenceUserEvents.removeEventListener(userEventListener);
+            userEventListener = null;
+        }
+        if (memberListener != null) {
+            databaseReferenceMembers.removeEventListener(memberListener);
+            memberListener = null;
+        }
     }
 
 

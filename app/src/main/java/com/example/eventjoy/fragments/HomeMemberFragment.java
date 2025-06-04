@@ -48,7 +48,6 @@ public class HomeMemberFragment extends Fragment implements SearchView.OnQueryTe
     private ListView lvGroups;
     private SearchView searchView;
     private UserGroupService userGroupService;
-    private GroupService groupService;
     private SharedPreferences sharedPreferences;
     private List<Group> groupList;
     private GroupAdapter groupAdapter;
@@ -211,7 +210,6 @@ public class HomeMemberFragment extends Fragment implements SearchView.OnQueryTe
 
     private void loadServices() {
         userGroupService = new UserGroupService(getContext());
-        groupService = new GroupService(getContext());
     }
 
     @Override

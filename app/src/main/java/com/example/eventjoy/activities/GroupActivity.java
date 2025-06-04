@@ -15,12 +15,15 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.eventjoy.R;
+import com.example.eventjoy.adapters.ViewPagerAdapter;
 import com.example.eventjoy.enums.Provider;
 import com.example.eventjoy.enums.UserGroupRole;
 import com.example.eventjoy.models.Group;
 import com.example.eventjoy.models.Member;
+import com.google.android.material.tabs.TabLayout;
 import com.squareup.picasso.Picasso;
 
 public class GroupActivity extends AppCompatActivity {
@@ -31,6 +34,9 @@ public class GroupActivity extends AppCompatActivity {
     private ImageView groupIcon;
     private TextView tvTitle;
     private String userGroupRole;
+    private ViewPager2 viewPager2;
+    private ViewPagerAdapter viewPagerAdapter;
+    private TabLayout tabLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +50,37 @@ public class GroupActivity extends AppCompatActivity {
         });
 
         loadComponents();
+
+
+        tabLayout = findViewById(R.id.tab_layout);
+        viewPager2 = findViewById(R.id.view_pager);
+        viewPagerAdapter = new ViewPagerAdapter(this, userGroupRole, group);
+        viewPager2.setAdapter(viewPagerAdapter);
+
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                viewPager2.setCurrentItem(tab.getPosition());
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+
+        viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+                tabLayout.getTabAt(position).select();
+            }
+        });
 
         toolbarActivity.setOnClickListener(new View.OnClickListener() {
             @Override
