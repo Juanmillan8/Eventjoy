@@ -98,7 +98,7 @@ public class CreateEventsActivity extends AppCompatActivity {
         });
 
     }
-
+    //TODO PARSEAR FECHA BIEN
     private void verifications() {
         if (textInputEditTextStartDateAndTime.getText().toString().isBlank() || textInputEditTextTitle.getText().toString().isBlank() ||
                 textInputEditTextDuration.getText().toString().isBlank() || textInputEditTextNumberOfParticipants.getText().toString().isBlank() ||

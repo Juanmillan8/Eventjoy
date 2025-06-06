@@ -147,7 +147,7 @@ public class MemberMainActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 member = dataSnapshot.getChildren().iterator().next().getValue(Member.class);
-                tvName.setText("Hello, " + member.getName());
+                tvName.setText("Hello, " + member.getUsername());
                 tvEmail.setText(user.getEmail());
                 if (member.getPhoto() != null && !member.getPhoto().isEmpty()) {
                     Picasso.get().load(member.getPhoto()).into(profileIcon);

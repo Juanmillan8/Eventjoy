@@ -8,6 +8,8 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,7 +50,7 @@ public class ListValorationsFragment extends Fragment {
 
         loadServices();
         loadComponents();
-
+        //TODO ARREGLAR VALORACIONES, CUANDO VOY A VER MIS VALORACIONES DA ERROR PORQUE SALE EL BOTON DE AÑADIR
         btnAddValoration.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -80,9 +82,11 @@ public class ListValorationsFragment extends Fragment {
         sharedPreferences = getActivity().getApplication().getSharedPreferences("EventjoyPreferences", Context.MODE_PRIVATE);
 
         if (getArguments() != null) {
+            Log.i("1","1");
             m = (Member) getArguments().getSerializable("member");
             ratedUserId=m.getId();
         }else{
+            Log.i("2","2");
             ratedUserId = sharedPreferences.getString("id", "");
         }
 

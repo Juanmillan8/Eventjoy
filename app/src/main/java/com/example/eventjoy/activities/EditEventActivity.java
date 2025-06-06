@@ -39,7 +39,7 @@ import java.util.Calendar;
 import java.util.List;
 
 public class EditEventActivity extends AppCompatActivity {
-
+    //TODO PARSEAR BIEN LA FECHA
     private EventService eventService;
     private Event eventEdit;
     private Toolbar toolbarActivity;

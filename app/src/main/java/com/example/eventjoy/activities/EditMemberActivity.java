@@ -331,6 +331,7 @@ public class EditMemberActivity extends AppCompatActivity {
 
                 @Override
                 public void onSuccess(String requestId, Map resultData) {
+                    Log.i("1", "1");
                     String imageUrl = resultData.get("secure_url").toString();
                     memberEdit.setPhoto(imageUrl);
                     editMember();
@@ -353,6 +354,7 @@ public class EditMemberActivity extends AppCompatActivity {
     }
 
     private void editMember() {
+        //TODO PARSEAR BIEN LA FECHA
         memberEdit.setDni(textInputEditTextDni.getText().toString());
         memberEdit.setPhone(textInputEditTextPhone.getText().toString());
         memberEdit.setUsername(textInputEditTextUsername.getText().toString());

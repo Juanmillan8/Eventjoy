@@ -225,7 +225,7 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
         super.onStop();
         userGroupService.stopListening();
     }
-
+    //TODO TENGO QUE PONER EL ONCLICK BIEN EN EL LISTADO DE MIEMBROS
     private void startListeningMembers() {
         userGroupService.stopListening();
         userGroupService.getMembersByGroupId(group.getId(), idCurrentUser, new MembersCallback() {
@@ -246,6 +246,8 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
     }
 
     private void loadComponents() {
+        memberList = new ArrayList<>();
+        memberAdapter = new MemberAdapter(getApplicationContext(), memberList);
         linearLayoutLeaveTheGroup = findViewById(R.id.linearLayoutLeaveTheGroup);
         linearLayoutEditGroup = findViewById(R.id.linearLayoutEditGroup);
         linearLayoutDeleteGroup = findViewById(R.id.linearLayoutDeleteGroup);

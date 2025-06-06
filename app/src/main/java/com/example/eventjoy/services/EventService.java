@@ -81,7 +81,7 @@ public class EventService {
                 AtomicBoolean found = new AtomicBoolean(false);
                 AtomicInteger processedCount = new AtomicInteger(0);
                 int totalEvents = eventList.size();
-
+                //TODO PARSEAR BIEN LA FECHA
                 for (Event event : eventList) {
                     LocalDateTime startDateTimeEvent = LocalDateTime.parse(event.getStartDateAndTime());
                     LocalDateTime endDateTimeEvent = LocalDateTime.parse(event.getEndDateAndTime());

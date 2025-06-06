@@ -216,6 +216,7 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(getApplicationContext(),"Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                         }
                     } else {
+                        Log.i("ERROR", e.getMessage());
                         Toast.makeText(getApplicationContext(),"Unexpected error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 }

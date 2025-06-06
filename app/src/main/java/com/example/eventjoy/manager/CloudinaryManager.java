@@ -26,7 +26,6 @@ public class CloudinaryManager {
 
     public static void uploadImage(Context context, Uri imageUri, UploadCallback callback) {
         initCloudinary(context);
-
         MediaManager.get().upload(imageUri)
                 .unsigned(UPLOAD_PRESET)
                 .callback(callback)

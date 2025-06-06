@@ -122,7 +122,7 @@
             android:layout_weight="1" />
 
 
-        <androidx.recyclerview.widget.RecyclerView
+        <SearchView
             android:id="@+id/svMembers"
             android:searchIcon="@drawable/icon_search"
             android:layout_width="wrap_content"
@@ -137,7 +137,7 @@
     </LinearLayout>
 
 
-    <ListView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/lvMembers"
         android:layout_width="match_parent"
         android:layout_marginBottom="5dp"

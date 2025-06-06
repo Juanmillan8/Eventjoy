@@ -66,7 +66,7 @@ public class HomeMemberFragment extends Fragment implements SearchView.OnQueryTe
             Intent createGroupIntent = new Intent(getContext(), CreateGroupActivity.class);
             startActivity(createGroupIntent);
         });
-
+        //TODO CUANDO UN USUARIO SE SALE DE UN GRUPO Y ES ADMINISTRADOR Y ERA EL ULTIMO Y SE ELIMINA EL GRUPO, ELIMINA OTROS GRUPOS DONDE ESTABA METIDO
         lvGroups.setOnItemClickListener((parent, view, position, id) -> {
             Group group = (Group) parent.getItemAtPosition(position);
             userGroupService.checkUserGroupRole(group.getId(), idCurrentUser, new UserGroupRoleCallback(){
