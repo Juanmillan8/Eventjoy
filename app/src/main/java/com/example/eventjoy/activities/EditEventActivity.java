@@ -31,6 +31,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -112,9 +113,11 @@ public class EditEventActivity extends AppCompatActivity {
         ) {
             Toast.makeText(getApplicationContext(), "You must fill out all the required fields", Toast.LENGTH_SHORT).show();
         } else {
-            eventStartDateTime = LocalDateTime.parse(textInputEditTextStartDateAndTime.getText().toString().trim(), formatterDateTime);
-            String formattedToday = LocalDateTime.now().format(formatterDateTime);
-            LocalDateTime today = LocalDateTime.parse(formattedToday, formatterDateTime);
+            LocalDateTime dateTime = LocalDateTime.parse(textInputEditTextStartDateAndTime.getText().toString(), formatterDateTime);
+            String formattedDateTime = dateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+
+            eventStartDateTime = LocalDateTime.parse(formattedDateTime);
+            LocalDateTime today = LocalDateTime.now();
 
             if(eventStartDateTime.isBefore(today) || eventStartDateTime.equals(today)){
                 Toast.makeText(getApplicationContext(), "The date must be after to today's date", Toast.LENGTH_SHORT).show();
@@ -135,7 +138,7 @@ public class EditEventActivity extends AppCompatActivity {
 
                 eventEdit.setDescription(textInputEditTextDescription.getText().toString());
                 eventEdit.setTitle(textInputEditTextTitle.getText().toString());
-                eventEdit.setStartDateAndTime(textInputEditTextStartDateAndTime.getText().toString());
+                eventEdit.setStartDateAndTime(eventStartDateTime.toString());
                 eventEdit.setMaxParticipants(Integer.parseInt(textInputEditTextNumberOfParticipants.getText().toString()));
 
                 userEventService.getByEventId(eventEdit.getId(), false, new ValueEventListener() {
@@ -145,12 +148,12 @@ public class EditEventActivity extends AppCompatActivity {
                         if(eventEdit.getMaxParticipants()<dataSnapshot.getChildrenCount()){
                             Toast.makeText(getApplicationContext(), "The maximum number of participants cannot be set lower than the number of people already registered for the event", Toast.LENGTH_SHORT).show();
                         }else{
-                            LocalDateTime startDateTimeEvent = LocalDateTime.parse(textInputEditTextStartDateAndTime.getText().toString(), formatterDateTime);
-                            LocalDateTime endDateTimeEvent = startDateTimeEvent.plusMinutes(
+
+                            LocalDateTime endDateTimeEvent = eventStartDateTime.plusMinutes(
                                     Integer.parseInt(textInputEditTextDuration.getText().toString())
                             );
 
-                        eventEdit.setEndDateAndTime(endDateTimeEvent.format(formatterDateTime));
+                        eventEdit.setEndDateAndTime(endDateTimeEvent.toString());
                         eventService.updateEvent(eventEdit);
                         Toast.makeText(getApplicationContext(), "Event successfully modified", Toast.LENGTH_SHORT).show();
                             Intent detailsEventIntent = new Intent(getApplicationContext(), EventDetailsActivity.class);
@@ -210,7 +213,7 @@ public class EditEventActivity extends AppCompatActivity {
 
         textInputEditTextTitle.setText(eventEdit.getTitle());
         textInputEditTextDescription.setText(eventEdit.getDescription());
-        textInputEditTextDuration.setText(String.valueOf(Duration.between(LocalDateTime.parse(eventEdit.getStartDateAndTime(), formatterDateTime), LocalDateTime.parse(eventEdit.getEndDateAndTime(), formatterDateTime)).toMinutes()));
+        textInputEditTextDuration.setText(String.valueOf(Duration.between(LocalDateTime.parse(eventEdit.getStartDateAndTime()), LocalDateTime.parse(eventEdit.getEndDateAndTime())).toMinutes()));
         textInputEditTextNumberOfParticipants.setText(String.valueOf(eventEdit.getMaxParticipants()));
         textInputEditTextStreet.setText(eventEdit.getAddress().getStreet());
         textInputEditTextStreetNumber.setText(eventEdit.getAddress().getNumberStreet());

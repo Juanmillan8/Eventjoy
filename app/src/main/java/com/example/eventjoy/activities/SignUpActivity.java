@@ -82,7 +82,6 @@ public class SignUpActivity extends AppCompatActivity {
     private MemberService memberService;
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
-    private DateTimeFormatter formatterDate;
     private LocalDate birthdate;
     private ProgressDialogFragment progressDialog;
     private static final int PICK_IMAGE_REQUEST = 0;
@@ -92,6 +91,7 @@ public class SignUpActivity extends AppCompatActivity {
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
     private ActivityResultLauncher<Intent> cameraLauncher;
     private Boolean changedImage;
+    private DateTimeFormatter inputFormatter, outputFormatter;
 
 
     @Override
@@ -241,9 +241,11 @@ public class SignUpActivity extends AppCompatActivity {
         } else if (textInputEditTextName.getText().toString().length() > 20) {
             Toast.makeText(getApplicationContext(), "The name must have a maximum of 20 characters", Toast.LENGTH_LONG).show();
         } else {
-            birthdate = LocalDate.parse(textInputEditTextBirthdate.getText().toString(), formatterDate);
-            String formattedToday = LocalDate.now().format(formatterDate);
-            LocalDate today = LocalDate.parse(formattedToday, formatterDate);
+            LocalDate date = LocalDate.parse(textInputEditTextBirthdate.getText().toString(), inputFormatter);
+            String formattedDate = date.format(outputFormatter);
+
+            birthdate = LocalDate.parse(formattedDate);
+            LocalDate today = LocalDate.now();
 
             if (birthdate.isAfter(today)) {
                 Toast.makeText(getApplicationContext(), "Date of birth cannot be later than the current date", Toast.LENGTH_LONG).show();
@@ -297,7 +299,7 @@ public class SignUpActivity extends AppCompatActivity {
         m.setUsername(textInputEditTextUsername.getText().toString());
         m.setSurname(textInputEditTextSurname.getText().toString());
         m.setRole(Role.MEMBER);
-        m.setBirthdate(textInputEditTextBirthdate.getText().toString());
+        m.setBirthdate(birthdate.toString());
         m.setName(textInputEditTextName.getText().toString());
 
         if (user == null) {
@@ -486,9 +488,10 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private void loadComponents() {
+        outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        inputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         changedImage = false;
         tvPassword = findViewById(R.id.tvPassword);
-        formatterDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         sharedPreferences = getSharedPreferences("EventjoyPreferences", Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
         mAuth = FirebaseAuth.getInstance();

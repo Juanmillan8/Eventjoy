@@ -75,7 +75,7 @@ public class EditMemberActivity extends AppCompatActivity {
     private ProgressDialogFragment progressDialog;
     private MemberService memberService;
     private LocalDate birthdate;
-    private DateTimeFormatter formatterDate;
+    private DateTimeFormatter inputFormatter, outputFormatter;
     private static final int PICK_IMAGE_REQUEST = 0;
     private Uri mImageUri;
     private Boolean changedImage;
@@ -252,9 +252,12 @@ public class EditMemberActivity extends AppCompatActivity {
         } else if (textInputEditTextName.getText().toString().length() > 20) {
             Toast.makeText(getApplicationContext(), "The name must have a maximum of 20 characters", Toast.LENGTH_LONG).show();
         } else {
-            birthdate = LocalDate.parse(textInputEditTextBirthdate.getText().toString(), formatterDate);
-            String formattedToday = LocalDate.now().format(formatterDate);
-            LocalDate today = LocalDate.parse(formattedToday, formatterDate);
+            LocalDate date = LocalDate.parse(textInputEditTextBirthdate.getText().toString(), inputFormatter);
+            String formattedDate = date.format(outputFormatter);
+
+            birthdate = LocalDate.parse(formattedDate);
+
+            LocalDate today = LocalDate.now();
 
             if (birthdate.isAfter(today)) {
                 Toast.makeText(getApplicationContext(), "Date of birth cannot be later than the current date", Toast.LENGTH_LONG).show();
@@ -354,7 +357,7 @@ public class EditMemberActivity extends AppCompatActivity {
         memberEdit.setPhone(textInputEditTextPhone.getText().toString());
         memberEdit.setUsername(textInputEditTextUsername.getText().toString());
         memberEdit.setSurname(textInputEditTextSurname.getText().toString());
-        memberEdit.setBirthdate(textInputEditTextBirthdate.getText().toString());
+        memberEdit.setBirthdate(birthdate.toString());
         memberEdit.setName(textInputEditTextName.getText().toString());
 
         user.updateEmail(textInputEditTextEmail.getText().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -410,7 +413,8 @@ public class EditMemberActivity extends AppCompatActivity {
     private void loadComponents() {
         user = FirebaseAuth.getInstance().getCurrentUser();
         changedImage = false;
-        formatterDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        inputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         btnSaveChanges = findViewById(R.id.btnSaveChanges);
         toolbarActivity = findViewById(R.id.toolbarActivity);
         setSupportActionBar(toolbarActivity);

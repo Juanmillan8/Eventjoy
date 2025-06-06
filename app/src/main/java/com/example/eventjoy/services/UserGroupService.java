@@ -87,6 +87,8 @@ public class UserGroupService {
                 if (dataSnapshot.exists()) {
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         UserGroup userGroup = snapshot.getValue(UserGroup.class);
+                        Log.i("USERGROUP", userGroup.getId());
+                        Log.i("ISADMIN", userGroup.getAdmin().toString());
                         if (userGroup.getGroupId().equals(groupId)) {
                             if (userGroup.getAdmin()) {
                                 callback.onSuccess(UserGroupRole.ADMIN);

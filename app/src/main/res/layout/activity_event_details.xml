@@ -20,7 +20,7 @@
         app:title="Event details"
         app:titleTextColor="@color/white" />
 
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollView3"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -267,14 +267,14 @@
 
             </LinearLayout>
 
-            <ListView
+            <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/lvMembers"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:layout_marginRight="10dp"
                 android:background="@drawable/rounded_green_background_radius_bottom"
-                android:divider="@null" />
+                android:divider="@null"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -314,6 +314,6 @@
             </LinearLayout>
 
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

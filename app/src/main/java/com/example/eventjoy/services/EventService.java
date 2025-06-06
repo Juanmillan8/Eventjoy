@@ -31,6 +31,7 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +44,7 @@ public class EventService {
     private DatabaseReference databaseReferenceUserEvent;
 
     private ValueEventListener eventsListener;
+    private ValueEventListener userEventsListener;
 
     public EventService(Context context) {
         databaseReferenceEvent = FirebaseDatabase.getInstance().getReference().child("events");
@@ -81,11 +83,9 @@ public class EventService {
                 int totalEvents = eventList.size();
 
                 for (Event event : eventList) {
-                    DateTimeFormatter formatterDateTime = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-                    LocalDateTime startDateTimeEvent = LocalDateTime.parse(event.getStartDateAndTime(), formatterDateTime);
-                    LocalDateTime endDateTimeEvent = LocalDateTime.parse(event.getEndDateAndTime(), formatterDateTime);
-                    String formattedToday = LocalDateTime.now().format(formatterDateTime);
-                    LocalDateTime today = LocalDateTime.parse(formattedToday, formatterDateTime);
+                    LocalDateTime startDateTimeEvent = LocalDateTime.parse(event.getStartDateAndTime());
+                    LocalDateTime endDateTimeEvent = LocalDateTime.parse(event.getEndDateAndTime());
+                    LocalDateTime today = LocalDateTime.now();
                     if (endDateTimeEvent.isAfter(today) && (startDateTimeEvent.isBefore(today) || startDateTimeEvent.equals(today))) {
                         databaseReferenceUserEvent.orderByChild("eventId").equalTo(event.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
@@ -163,6 +163,66 @@ public class EventService {
         });
     }
 
+    public void getByMemberId(String memberId, EventsCallback callback) {
+        if (userEventsListener != null) {
+            databaseReferenceUserEvent.removeEventListener(userEventsListener);
+        }
+
+        userEventsListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                List<String> eventsId = new ArrayList<>();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    UserEvent userEvent = snapshot.getValue(UserEvent.class);
+                    eventsId.add(userEvent.getEventId());
+                }
+
+                if (eventsId.isEmpty()) {
+                    Log.i("VACIO", eventsId.toString());
+                    callback.onSuccess(new ArrayList<>());
+                    return;
+                }else{
+                    Log.i("LLENO", eventsId.toString());
+                }
+
+
+
+
+                if (eventsListener != null) {
+                    databaseReferenceEvent.removeEventListener(eventsListener);
+                }
+
+                eventsListener = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        List<Event> events = new ArrayList<>();
+
+                        for (DataSnapshot groupSnap : snapshot.getChildren()) {
+                            Event event = groupSnap.getValue(Event.class);
+                            if (event != null && eventsId.contains(event.getId())) {
+                                events.add(event);
+                            }
+                        }
+                        callback.onSuccess(events);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        callback.onFailure(error.toException());
+                    }
+                };
+                databaseReferenceEvent.addValueEventListener(eventsListener);
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                callback.onFailure(error.toException());
+            }
+        };
+        databaseReferenceUserEvent.orderByChild("userId").equalTo(memberId).addValueEventListener(userEventsListener);
+    }
+
     public void getByGroupId(String groupId, EventsCallback callback) {
         if (eventsListener != null) {
             databaseReferenceEvent.removeEventListener(eventsListener);
@@ -193,8 +253,6 @@ public class EventService {
     }
 
     public void checkOverlapingEvents(String memberId, Event eventCheck, SimpleCallbackOnError callback) {
-        DateTimeFormatter formatterDateTime = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        //TODO TENER EN CUENTA QUE PUEDEN HABER EVENTOS SIN GROUPID QUE SE SUPONE QUE SE HAN ELIMINADO
         databaseReferenceUserEvent.orderByChild("userId").equalTo(memberId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -210,43 +268,56 @@ public class EventService {
                 }
 
 
-                for (String eventId : userEventIds) {
-                    databaseReferenceEvent.orderByChild("id").equalTo(eventId).addListenerForSingleValueEvent(new ValueEventListener() {
+                    databaseReferenceEvent.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            DataSnapshot snapshot = dataSnapshot.getChildren().iterator().next();
-                            Event event = snapshot.getValue(Event.class);
+                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                Event event = snapshot.getValue(Event.class);
+                                if(event.getGroupId()!=null && userEventIds.contains(event.getId())){
 
-                            LocalDateTime startAppointmentDB = LocalDateTime.parse(event.getStartDateAndTime(), formatterDateTime);
-                            LocalDateTime endAppointmentDB = LocalDateTime.parse(event.getEndDateAndTime(), formatterDateTime);
+                                    OffsetDateTime offsetDateTime;
 
-                            LocalDateTime startAppointmentCheck = LocalDateTime.parse(eventCheck.getStartDateAndTime(), formatterDateTime);
-                            LocalDateTime endAppointmentCheck = LocalDateTime.parse(eventCheck.getEndDateAndTime(), formatterDateTime);
+                                    offsetDateTime = OffsetDateTime.parse(event.getStartDateAndTime());
+                                    LocalDateTime startAppointmentDB = offsetDateTime.toLocalDateTime();
+
+                                    offsetDateTime = OffsetDateTime.parse(event.getEndDateAndTime());
+                                    LocalDateTime endAppointmentDB = offsetDateTime.toLocalDateTime();
+
+                                    offsetDateTime = OffsetDateTime.parse(eventCheck.getStartDateAndTime());
+                                    LocalDateTime startAppointmentCheck = offsetDateTime.toLocalDateTime();
+
+                                    offsetDateTime = OffsetDateTime.parse(eventCheck.getEndDateAndTime());
+                                    LocalDateTime endAppointmentCheck = offsetDateTime.toLocalDateTime();
 
 
-                            if ((((startAppointmentCheck.isAfter(startAppointmentDB) || startAppointmentCheck.equals(startAppointmentDB)) && (startAppointmentCheck.isBefore(endAppointmentDB))) || ((endAppointmentCheck.isAfter(startAppointmentDB)) && (endAppointmentCheck.isBefore(endAppointmentDB) || endAppointmentCheck.equals(endAppointmentDB))) || ((startAppointmentCheck.isBefore(startAppointmentDB) || startAppointmentCheck.equals(startAppointmentDB)) && (endAppointmentCheck.isAfter(endAppointmentDB) || endAppointmentCheck.equals(endAppointmentDB)))) && !event.getId().equals(eventCheck.getId())) {
-                                callback.onError("This event overlaps with another event you have registered for");
-                                return;
+                                    if ((((startAppointmentCheck.isAfter(startAppointmentDB) || startAppointmentCheck.equals(startAppointmentDB)) &&
+                                            (startAppointmentCheck.isBefore(endAppointmentDB))) || ((endAppointmentCheck.isAfter(startAppointmentDB)) &&
+                                            (endAppointmentCheck.isBefore(endAppointmentDB) || endAppointmentCheck.equals(endAppointmentDB))) ||
+                                            ((startAppointmentCheck.isBefore(startAppointmentDB) ||
+                                                    startAppointmentCheck.equals(startAppointmentDB)) &&
+                                                    (endAppointmentCheck.isAfter(endAppointmentDB) || endAppointmentCheck.equals(endAppointmentDB)))) &&
+                                            !event.getId().equals(eventCheck.getId())) {
+                                        callback.onError("This event overlaps with another event you have registered for");
+                                        return;
+                                    }
+                                }
                             }
-
-
+                            callback.onError(null);
                         }
 
                         @Override
                         public void onCancelled(@NonNull DatabaseError error) {
                             //En caso de error en la consulta, lo registramos en el log y notificamos mediante el callback
-                            Log.e("Error - AppointmentService - canDeleteConsultation", error.getMessage());
+                            Log.e("Error - EventService - checkOverlapingEvents", error.getMessage());
                             callback.onCancelled("Error querying the database " + error.getMessage());
                         }
                     });
-                }
-                callback.onError(null);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 //En caso de error en la consulta, lo registramos en el log y notificamos mediante el callback
-                Log.e("Error - AppointmentService - canDeleteConsultation", error.getMessage());
+                Log.e("Error - EventService - checkOverlapingEvents", error.getMessage());
                 callback.onCancelled("Error querying the database " + error.getMessage());
             }
         });
@@ -256,6 +327,10 @@ public class EventService {
         if (eventsListener != null) {
             databaseReferenceEvent.removeEventListener(eventsListener);
             eventsListener = null;
+        }
+        if (userEventsListener != null) {
+            databaseReferenceUserEvent.removeEventListener(userEventsListener);
+            userEventsListener = null;
         }
     }
 }

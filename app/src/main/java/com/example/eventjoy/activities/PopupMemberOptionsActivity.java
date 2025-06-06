@@ -24,7 +24,7 @@ import com.example.eventjoy.models.Member;
 public class PopupMemberOptionsActivity extends AppCompatActivity {
 
     private TextView tvMemberDetails, tvEvents, tvReports, tvValorations, tvAssignAdmin, tvExpelMember;
-    private Bundle getMember;
+    private Bundle getData;
     private Member member;
 
     @Override
@@ -59,6 +59,16 @@ public class PopupMemberOptionsActivity extends AppCompatActivity {
             }
         });
 
+        tvEvents.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //TODO desde aqui es la nueva
+                Intent listEventsIntent = new Intent(getApplicationContext(), ListEventsContainerActivity.class);
+                listEventsIntent.putExtra("member", member);
+                startActivity(listEventsIntent);
+            }
+        });
+
     }
 
     private void loadWindow(){
@@ -89,8 +99,8 @@ public class PopupMemberOptionsActivity extends AppCompatActivity {
         tvValorations = findViewById(R.id.tvValorations);
         tvAssignAdmin = findViewById(R.id.tvAssignAdmin);
         tvExpelMember = findViewById(R.id.tvExpelMember);
-        getMember = getIntent().getExtras();
-        member = (Member) getMember.getSerializable("member");
+        getData = getIntent().getExtras();
+        member = (Member) getData.getSerializable("member");
     }
 
 }

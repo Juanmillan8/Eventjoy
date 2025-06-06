@@ -53,14 +53,37 @@ public class UserEventService {
 
     public void getByEventId(String eventId, Boolean listenForChanges, ValueEventListener listener) {
         Query query = databaseReferenceUserEvent.orderByChild("eventId").equalTo(eventId);
-        if(listenForChanges){
+        if (listenForChanges) {
             query.addValueEventListener(listener);
-        }else{
+        } else {
             query.addListenerForSingleValueEvent(listener);
         }
     }
 
-    public String insertUserEvent(UserEvent ue) {
+    public void leaveEvent(String eventId, String userId, SimpleCallback callback) {
+        databaseReferenceUserEvent.orderByChild("eventId").equalTo(eventId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                UserEvent userEvent = new UserEvent();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    userEvent = snapshot.getValue(UserEvent.class);
+                    if (userEvent.getUserId().equals(userId)) {
+                        break;
+                    }
+                }
+                databaseReferenceUserEvent.child(userEvent.getId()).removeValue();
+                callback.onSuccess("You are no longer part of this event");
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Error - UserEventService - leaveEvent", error.getMessage());
+                callback.onCancelled("Error querying the database: " + error.getMessage());
+            }
+        });
+    }
+
+    public String joinTheEvent(UserEvent ue) {
         DatabaseReference newReference = databaseReferenceUserEvent.push();
         ue.setId(newReference.getKey());
 

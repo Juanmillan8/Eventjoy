@@ -30,6 +30,7 @@ import com.example.eventjoy.services.UserGroupService;
 import com.squareup.picasso.Picasso;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class PopupJoinGroup extends AppCompatActivity {
@@ -40,7 +41,6 @@ public class PopupJoinGroup extends AppCompatActivity {
     private ImageView iconGroup;
     private Button btnJoinGroup;
     private SharedPreferences sharedPreferences;
-    private DateTimeFormatter formatterDate;
     private UserGroupService userGroupService;
 
     @Override
@@ -61,8 +61,7 @@ public class PopupJoinGroup extends AppCompatActivity {
         btnJoinGroup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String formattedToday = LocalDate.now().format(formatterDate);
-                LocalDate today = LocalDate.parse(formattedToday, formatterDate);
+                LocalDateTime today = LocalDateTime.now();
 
                 UserGroup us = new UserGroup();
                 us.setGroupId(group.getId());
@@ -105,7 +104,6 @@ public class PopupJoinGroup extends AppCompatActivity {
     }
 
     private void loadComponents() {
-        formatterDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         sharedPreferences = getSharedPreferences("EventjoyPreferences", Context.MODE_PRIVATE);
         btnJoinGroup = findViewById(R.id.btnJoinGroup);
         tvGroupTitle = findViewById(R.id.tvGroupTitle);

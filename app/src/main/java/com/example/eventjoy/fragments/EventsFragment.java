@@ -30,12 +30,12 @@ import com.example.eventjoy.callbacks.UserGroupRoleCallback;
 import com.example.eventjoy.enums.UserGroupRole;
 import com.example.eventjoy.models.Event;
 import com.example.eventjoy.models.Group;
+import com.example.eventjoy.models.Member;
 import com.example.eventjoy.services.EventService;
 import com.example.eventjoy.services.UserEventService;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +44,7 @@ public class EventsFragment extends Fragment {
     private View rootView;
     private String role;
     private Group group;
+    private Member member;
     private FloatingActionButton btnCreateEvent;
     private ListView lvEvents;
     private EventService eventService;
@@ -51,7 +52,7 @@ public class EventsFragment extends Fragment {
     private EventAdapter eventAdapter;
     private UserEventService userEventService;
     private SharedPreferences sharedPreferences;
-    private String idCurrentUser;
+    private String idCurrentUser, idMemberUser;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -75,24 +76,33 @@ public class EventsFragment extends Fragment {
             Event event = (Event) parent.getItemAtPosition(position);
             Intent detailsEventIntent = new Intent(getContext(), EventDetailsActivity.class);
             detailsEventIntent.putExtra("event", event);
-            detailsEventIntent.putExtra("role", role);
 
-            userEventService.checkMemberIsParticipant(event.getId(), idCurrentUser, new SimpleCallback() {
-                @Override
-                public void onSuccess(String message) {
-                    if (message.equals("Participant")) {
-                        detailsEventIntent.putExtra("isParticipant", true);
-                    }else{
-                        detailsEventIntent.putExtra("isParticipant", false);
+            if (role != null) {
+                detailsEventIntent.putExtra("role", role);
+                userEventService.checkMemberIsParticipant(event.getId(), idCurrentUser, new SimpleCallback() {
+                    @Override
+                    public void onSuccess(String message) {
+                        if (message.equals("Participant")) {
+                            detailsEventIntent.putExtra("isParticipant", true);
+                        } else {
+                            detailsEventIntent.putExtra("isParticipant", false);
+                        }
+                        startActivity(detailsEventIntent);
                     }
-                    startActivity(detailsEventIntent);
-                }
 
-                @Override
-                public void onCancelled(String onCancelledMessage) {
-                    Toast.makeText(getContext(), onCancelledMessage, Toast.LENGTH_SHORT).show();
+                    @Override
+                    public void onCancelled(String onCancelledMessage) {
+                        Toast.makeText(getContext(), onCancelledMessage, Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+            } else {
+                if (idMemberUser == null) {
+                    detailsEventIntent.putExtra("role", "PARTICIPANT");
                 }
-            });
+                detailsEventIntent.putExtra("isParticipant", true);
+                startActivity(detailsEventIntent);
+            }
         });
         return rootView;
     }
@@ -106,23 +116,54 @@ public class EventsFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        startListeningEvents();
+        if (role != null) {
+            startListeningEventsByGroupId();
+        } else {
+            startListeningEventsByMemberId();
+        }
     }
 
-    private void startListeningEvents() {
+    private void startListeningEventsByGroupId() {
         eventService.stopListening();
         eventService.getByGroupId(group.getId(), new EventsCallback() {
             @Override
             public void onSuccess(List<Event> events) {
-                //TODO lo de listar eventos en forma descendente esta hecho (descendente, si, esta bien, lo tengo que modificar en el texto) ahora falta lo de;
-                //consultar eventos en los que se han participado
-                DateTimeFormatter formatterDateTime = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
                 events.sort((e1, e2) -> {
-                    LocalDateTime date1 = LocalDateTime.parse(e1.getStartDateAndTime(), formatterDateTime);
-                    LocalDateTime date2 = LocalDateTime.parse(e2.getStartDateAndTime(), formatterDateTime);
+                    LocalDateTime date1 = LocalDateTime.parse(e1.getStartDateAndTime());
+                    LocalDateTime date2 = LocalDateTime.parse(e2.getStartDateAndTime());
                     return date2.compareTo(date1);
                 });
 
+                eventList.clear();
+                eventAdapter = new EventAdapter(getContext(), events);
+                lvEvents.setAdapter(eventAdapter);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(getContext(), "Error querying database " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void startListeningEventsByMemberId() {
+        eventService.stopListening();
+        String idConsult = "";
+
+        if (idMemberUser != null) {
+            idConsult = idMemberUser;
+        } else {
+            idConsult = idCurrentUser;
+        }
+
+        eventService.getByMemberId(idConsult, new EventsCallback() {
+            @Override
+            public void onSuccess(List<Event> events) {
+                events.sort((e1, e2) -> {
+                    LocalDateTime date1 = LocalDateTime.parse(e1.getStartDateAndTime());
+                    LocalDateTime date2 = LocalDateTime.parse(e2.getStartDateAndTime());
+                    return date2.compareTo(date1);
+                });
                 eventList.clear();
                 eventAdapter = new EventAdapter(getContext(), events);
                 lvEvents.setAdapter(eventAdapter);
@@ -141,12 +182,15 @@ public class EventsFragment extends Fragment {
         eventList = new ArrayList<>();
         lvEvents = rootView.findViewById(R.id.lvEvents);
         btnCreateEvent = rootView.findViewById(R.id.btnCreateEvent);
-
         if (getArguments() != null) {
             role = getArguments().getString("userGroupRole");
             group = (Group) getArguments().getSerializable("group");
+            member = (Member) getArguments().getSerializable("member");
+            if (member != null) {
+                idMemberUser = member.getId();
+            }
         }
-        if (role.equals("ADMIN")) {
+        if (role != null && role.equals("ADMIN")) {
             btnCreateEvent.setVisibility(View.VISIBLE);
         }
     }

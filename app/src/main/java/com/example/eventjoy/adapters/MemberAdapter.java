@@ -4,53 +4,52 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.eventjoy.R;
-import com.example.eventjoy.models.Group;
+import com.example.eventjoy.listeners.OnMemberClickListener;
 import com.example.eventjoy.models.Member;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MemberAdapter extends ArrayAdapter<Member> {
+public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberViewHolder> {
 
+    private final Context context;
     private List<Member> members;
-    private List<Member> originalList;
+    private final List<Member> originalList;
+    private OnMemberClickListener listener;
 
-    //Constructor del adapter
-    public MemberAdapter(Context context, List<Member> members){
-        super(context, 0, members);
-        this.members = members;
-        originalList = new ArrayList<>();
-        originalList.addAll(members);
+    public MemberAdapter(Context context, List<Member> members) {
+        this.context = context;
+        this.members = new ArrayList<>(members);
+        this.originalList = new ArrayList<>(members);
     }
 
-    public void filter(final String txtSearch) {
-        int length = txtSearch.length();
-        if (length == 0) {
-            members.clear();
-            members.addAll(originalList);
+    public void setOnMemberClickListener(OnMemberClickListener listener) {
+        this.listener = listener;
+    }
+
+    public void filter(String txtSearch) {
+        if (txtSearch == null || txtSearch.trim().isEmpty()) {
+            members = new ArrayList<>(originalList);
         } else {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                List<Member> collecion = members.stream()
-                        .filter(i -> i.getUsername().toLowerCase().contains(txtSearch.toLowerCase()))
+                members = originalList.stream()
+                        .filter(m -> m.getUsername().toLowerCase().contains(txtSearch.toLowerCase()))
                         .collect(Collectors.toList());
-                members.clear();
-                members.addAll(collecion);
             } else {
+                List<Member> filteredList = new ArrayList<>();
                 for (Member m : originalList) {
                     if (m.getUsername().toLowerCase().contains(txtSearch.toLowerCase())) {
-                        members.add(m);
+                        filteredList.add(m);
                     }
                 }
+                members = filteredList;
             }
         }
         notifyDataSetChanged();
@@ -58,17 +57,34 @@ public class MemberAdapter extends ArrayAdapter<Member> {
 
     @NonNull
     @Override
-    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        Member member = this.members.get(position);
-
-        if(convertView==null){
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_member, parent, false);
-        }
-
-        TextView tvUsername = convertView.findViewById(R.id.tvUsername);
-        tvUsername.setText(member.getUsername());
-
-        return convertView;
+    public MemberViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(context).inflate(R.layout.item_member, parent, false);
+        return new MemberViewHolder(view);
     }
 
+    @Override
+    public void onBindViewHolder(@NonNull MemberViewHolder holder, int position) {
+        Member member = members.get(position);
+        holder.tvUsername.setText(member.getUsername());
+
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onMemberClick(member);
+            }
+        });
+    }
+
+    @Override
+    public int getItemCount() {
+        return members.size();
+    }
+
+    public static class MemberViewHolder extends RecyclerView.ViewHolder {
+        TextView tvUsername;
+
+        public MemberViewHolder(@NonNull View itemView) {
+            super(itemView);
+            tvUsername = itemView.findViewById(R.id.tvUsername);
+        }
+    }
 }

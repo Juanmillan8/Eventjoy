@@ -27,6 +27,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.eventjoy.R;
 import com.example.eventjoy.adapters.GroupAdapter;
@@ -61,7 +63,7 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
     private String userGroupRole;
     private TextView tvTitle, tvDescription;
     private ImageView groupIcon, ivBack;
-    private ListView lvMembers;
+    private RecyclerView lvMembers;
     private MemberAdapter memberAdapter;
     private SearchView svMembers;
     private TextView tvMembership;
@@ -98,8 +100,7 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
             }
         });
 
-        lvMembers.setOnItemClickListener((parent, view, position, id) -> {
-            Member member = (Member) parent.getItemAtPosition(position);
+        memberAdapter.setOnMemberClickListener(member -> {
             Intent showPoPup = new Intent(getApplicationContext(), PopupMemberOptionsActivity.class);
             showPoPup.putExtra("member", member);
             startActivity(showPoPup);
@@ -253,6 +254,7 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
         tvMembership = findViewById(R.id.tvMembership);
         svMembers = findViewById(R.id.svMembers);
         lvMembers = findViewById(R.id.lvMembers);
+        lvMembers.setLayoutManager(new LinearLayoutManager(this));
         ivBack = findViewById(R.id.ivBack);
         tvDescription = findViewById(R.id.tvDescription);
         tvTitle = findViewById(R.id.tvTitle);

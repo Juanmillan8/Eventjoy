@@ -17,6 +17,10 @@
             android:icon="@drawable/icon_list_rating"
             android:title="Ratings" />
         <item
+            android:id="@+id/eventsFragment"
+            android:icon="@drawable/icon_event"
+            android:title="My events" />
+        <item
             android:id="@+id/logout"
             android:icon="@drawable/logout_icon"
             android:title="Logout" />

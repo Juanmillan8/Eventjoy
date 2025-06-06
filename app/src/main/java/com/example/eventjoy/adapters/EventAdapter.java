@@ -27,6 +27,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,11 +64,21 @@ public class EventAdapter extends ArrayAdapter<Event> {
 
         tvTitle.setText(event.getTitle());
 
-        String[] partsDateTimeStart = event.getStartDateAndTime().split(" ");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+        OffsetDateTime offsetStartDateTime = OffsetDateTime.parse(event.getStartDateAndTime());
+        LocalDateTime startDateTime = offsetStartDateTime.toLocalDateTime();
+        String startDateTimeString = startDateTime.format(formatter);
+
+        OffsetDateTime offsetEndDateTime = OffsetDateTime.parse(event.getEndDateAndTime());
+        LocalDateTime endDateTime = offsetEndDateTime.toLocalDateTime();
+        String endDateTimeString = endDateTime.format(formatter);
+
+        String[] partsDateTimeStart = startDateTimeString.split(" ");
         String dateStart = partsDateTimeStart[0];
         String timeStart = partsDateTimeStart[1];
 
-        String[] partsDateTimeEnd = event.getEndDateAndTime().split(" ");
+        String[] partsDateTimeEnd = endDateTimeString.split(" ");
         String dateEnd = partsDateTimeEnd[0];
         String timeEnd= partsDateTimeEnd[1];
 

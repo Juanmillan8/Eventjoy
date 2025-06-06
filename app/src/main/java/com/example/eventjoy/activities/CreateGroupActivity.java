@@ -48,8 +48,6 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Period;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 public class CreateGroupActivity extends AppCompatActivity {
@@ -67,7 +65,6 @@ public class CreateGroupActivity extends AppCompatActivity {
     private GroupService groupService;
     private UserGroupService userGroupService;
     private SharedPreferences sharedPreferences;
-    private DateTimeFormatter formatterDate;
     private ProgressDialogFragment progressDialog;
 
     @Override
@@ -218,8 +215,7 @@ public class CreateGroupActivity extends AppCompatActivity {
     private void createGroup(Group g) {
         String groupId = groupService.insertGroup(g);
 
-        String formattedToday = LocalDate.now().format(formatterDate);
-        LocalDate today = LocalDate.parse(formattedToday, formatterDate);
+        LocalDate today = LocalDate.now();
 
         UserGroup us = new UserGroup();
         us.setGroupId(groupId);
@@ -275,7 +271,6 @@ public class CreateGroupActivity extends AppCompatActivity {
     }
 
     private void loadComponents() {
-        formatterDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         sharedPreferences = getSharedPreferences("EventjoyPreferences", Context.MODE_PRIVATE);
         changedImage = false;
         btnCamera = findViewById(R.id.btnCamera);
