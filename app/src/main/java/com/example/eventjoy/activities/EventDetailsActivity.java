@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.provider.CalendarContract;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
@@ -43,8 +44,12 @@ import com.example.eventjoy.services.EventService;
 import com.example.eventjoy.services.MemberService;
 import com.example.eventjoy.services.UserEventService;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -226,12 +231,48 @@ public class EventDetailsActivity extends AppCompatActivity {
         });
     }
 
+    private void addReminder(){
+        Intent intent = new Intent(Intent.ACTION_EDIT);
+        intent.setType("vnd.android.cursor.item/event");
+
+        String ubication = "Street: " + event.getAddress().getStreet() + ", nº of the street: " + event.getAddress().getNumberStreet() + ", floor: " + event.getAddress().getFloor() + ", door: " + event.getAddress().getDoor() + ", postal code: " + event.getAddress().getPostalCode() + ", city: " + event.getAddress().getCity() + ", municipality: " + event.getAddress().getMunicipality() + ", province: " + event.getAddress().getProvince();
+
+        String localTimeStr;
+        LocalDateTime localDateTime;
+        ZonedDateTime zonedLocalTimeStart;
+        ZonedDateTime zonedLocalTimeEnd;
+
+        localTimeStr = event.getStartDateAndTime().replace("Z", "");
+        localDateTime = LocalDateTime.parse(localTimeStr, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+        zonedLocalTimeStart = localDateTime.atZone(ZoneId.of("Europe/Madrid"));
+
+        localTimeStr = event.getEndDateAndTime().replace("Z", "");
+        localDateTime = LocalDateTime.parse(localTimeStr, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+        zonedLocalTimeEnd = localDateTime.atZone(ZoneId.of("Europe/Madrid"));
+
+        intent.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, zonedLocalTimeStart.toInstant().toEpochMilli());
+        intent.putExtra(CalendarContract.EXTRA_EVENT_END_TIME, zonedLocalTimeEnd.toInstant().toEpochMilli());
+        intent.putExtra(CalendarContract.Events.TITLE, event.getTitle());
+        intent.putExtra(CalendarContract.Events.DESCRIPTION, event.getDescription());
+        intent.putExtra(CalendarContract.Events.EVENT_LOCATION, ubication);
+        startActivity(intent);
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.dice_roller) {
             Intent diceRollerIntent = new Intent(getApplicationContext(), DiceRollerActivity.class);
             startActivity(diceRollerIntent);
+        }else if(item.getItemId() == R.id.add_recordatory){
+            LocalDateTime today = LocalDateTime.now();
+            if(startDateTimeEvent.isAfter(today)){
+                addReminder();
+            }else if((startDateTimeEvent.isBefore(today) || startDateTimeEvent.equals(today)) && endDateTimeEvent.isAfter(today)){
+                Toast.makeText(getApplicationContext(), "You cannot add a reminder for an event that has already been initialized", Toast.LENGTH_SHORT).show();
+            }else if (endDateTimeEvent.isBefore(today) || endDateTimeEvent.equals(today)){
+                Toast.makeText(getApplicationContext(), "You cannot add a reminder for an event that has already ended", Toast.LENGTH_SHORT).show();
+            }
         }else{
             finish();
         }
@@ -274,6 +315,7 @@ public class EventDetailsActivity extends AppCompatActivity {
         startDateTimeEvent = startDateTime;
         endDateTimeEvent = endDateTime;
 
+        Log.i("star " + startDateTimeEvent.toString(), "end " + endDateTimeEvent.toString());
 
         tvTitle.setText(event.getTitle());
 

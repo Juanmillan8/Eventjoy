@@ -48,6 +48,9 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 public class CreateGroupActivity extends AppCompatActivity {
@@ -215,12 +218,14 @@ public class CreateGroupActivity extends AppCompatActivity {
     private void createGroup(Group g) {
         String groupId = groupService.insertGroup(g);
 
-        LocalDate today = LocalDate.now();
+        ZonedDateTime today = ZonedDateTime.now(ZoneOffset.UTC);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        String formattedToday = today.format(formatter);
 
         UserGroup us = new UserGroup();
         us.setGroupId(groupId);
         us.setAdmin(true);
-        us.setJoinedAt(today.toString());
+        us.setJoinedAt(formattedToday);
         us.setUserId(sharedPreferences.getString("id", ""));
         us.setNotificationsEnabled(true);
         userGroupService.insertUserGroup(us);

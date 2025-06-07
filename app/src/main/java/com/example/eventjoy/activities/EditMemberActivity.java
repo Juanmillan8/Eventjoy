@@ -253,10 +253,8 @@ public class EditMemberActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "The name must have a maximum of 20 characters", Toast.LENGTH_LONG).show();
         } else {
             LocalDate date = LocalDate.parse(textInputEditTextBirthdate.getText().toString(), inputFormatter);
-            String formattedDate = date.format(outputFormatter);
-
+            String formattedDate = outputFormatter.format(date);
             birthdate = LocalDate.parse(formattedDate);
-
             LocalDate today = LocalDate.now();
 
             if (birthdate.isAfter(today)) {
@@ -354,7 +352,6 @@ public class EditMemberActivity extends AppCompatActivity {
     }
 
     private void editMember() {
-        //TODO PARSEAR BIEN LA FECHA
         memberEdit.setDni(textInputEditTextDni.getText().toString());
         memberEdit.setPhone(textInputEditTextPhone.getText().toString());
         memberEdit.setUsername(textInputEditTextUsername.getText().toString());
@@ -440,9 +437,15 @@ public class EditMemberActivity extends AppCompatActivity {
         textInputEditTextUsername.setText(memberEdit.getUsername());
         textInputEditTextDni.setText(memberEdit.getDni());
         textInputEditTextPhone.setText(memberEdit.getPhone());
-        textInputEditTextBirthdate.setText(memberEdit.getBirthdate().toString());
-        textInputEditTextEmail.setText(sharedPreferences.getString("email", ""));
 
+
+        LocalDate birthDate = LocalDate.parse(memberEdit.getBirthdate(), outputFormatter);
+
+
+        textInputEditTextBirthdate.setText(inputFormatter.format(birthDate));
+
+
+        textInputEditTextEmail.setText(sharedPreferences.getString("email", ""));
         if (memberEdit.getPhoto() != null && !memberEdit.getPhoto().isEmpty()) {
             Picasso.get().load(memberEdit.getPhoto()).into(profileIcon);
             changedImage = true;

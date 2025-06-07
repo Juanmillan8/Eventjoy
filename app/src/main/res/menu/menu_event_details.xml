@@ -1,8 +1,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <item
         android:id="@+id/dice_roller"
         android:icon="@drawable/icon_dice"
         android:title="Dice roller"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/add_recordatory"
+        android:icon="@drawable/icon_dice"
+        android:title="Add recordatory"
+        app:showAsAction="never" />
 </menu>

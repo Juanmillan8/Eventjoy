@@ -78,7 +78,7 @@ public class PopupReauthenticateActivity extends AppCompatActivity {
                             user.reload();
                         }else{
                             //Puede dar la ocasión de que el usuario haya insertado unas credenciales incorrectas y haya sido deslogado de la aplicación, si
-                            //posteriormente introduce sus credenciales correctamente, tendremos que llamar al método signInWithEmailAndPassword para que
+                            //posteriormente introduce sus credenciales correctamente, tendremos que llamar al meto_do signInWithEmailAndPassword para que
                             //inicie sesión de nuevo
                             mAuth.signInWithEmailAndPassword(textInputEditTextEmail.getText().toString(), textInputEditTextPassword.getText().toString()).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                                 @Override

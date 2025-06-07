@@ -24,6 +24,8 @@ import com.example.eventjoy.models.Member;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class DetailsMemberFragment extends Fragment {
 
@@ -34,6 +36,7 @@ public class DetailsMemberFragment extends Fragment {
     private ImageButton btnEditAccount;
     private ImageView profileIcon;
     private LinearLayout linearLayoutEmail, linearLayoutPhoneNumber, linearLayoutDni;
+    private DateTimeFormatter outputFormatter, inputFormatter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -56,6 +59,8 @@ public class DetailsMemberFragment extends Fragment {
     }
 
     private void loadComponents() {
+        outputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         linearLayoutEmail = rootView.findViewById(R.id.linearLayoutEmail);
         linearLayoutPhoneNumber = rootView.findViewById(R.id.linearLayoutPhoneNumber);
         linearLayoutDni = rootView.findViewById(R.id.linearLayoutDni);
@@ -74,7 +79,11 @@ public class DetailsMemberFragment extends Fragment {
 
         tvNameAndSurname.setText(member.getName() + " " + member.getSurname());
         tvUsername.setText(member.getUsername());
-        tvBirthdate.setText(member.getBirthdate().toString());
+
+
+        LocalDate birthDate = LocalDate.parse(member.getBirthdate(), inputFormatter);
+
+        tvBirthdate.setText(outputFormatter.format(birthDate));
         tvLevel.setText("Level " + member.getLevel().toString());
 
         if(member.getId().equals(sharedPreferences.getString("id", ""))){

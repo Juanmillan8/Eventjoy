@@ -51,7 +51,7 @@ public class GroupService {
 
     public void deleteGroup(Group group) {
         databaseReferenceGroups.child(group.getId()).removeValue();
-
+        Log.i("SE ELIMINA PRIMERO", "SE ELIMINA PRIMERO");
         databaseReferenceUserGroups.orderByChild("groupId").equalTo(group.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {

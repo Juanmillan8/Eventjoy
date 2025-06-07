@@ -59,16 +59,20 @@ public class UserGroupService {
         databaseReferenceUserGroups.orderByChild("userId").equalTo(userId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Log.i("GROUP ID", groupId);
                 UserGroup userGroup = new UserGroup();
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    userGroup = snapshot.getValue(UserGroup.class);
-                    if (userGroup.getGroupId().toString().equals(groupId.toString())) {
+                    if (userGroup.getGroupId().equals(groupId)) {
+                        userGroup = snapshot.getValue(UserGroup.class);
+                        Log.i("US" + userGroup.getGroupId(), groupId);
                         break;
                     }
 
                 }
-
+                Log.i("PRIMERO", "SESALE PRIMERO");
+                Log.i("USERGROUP", userGroup.getId());
                 databaseReferenceUserGroups.child(userGroup.getId()).removeValue();
+                Log.i("PRIMERO2", "PRIMERO2");
                 callback.onSuccess("You have successfully left the group");
             }
 

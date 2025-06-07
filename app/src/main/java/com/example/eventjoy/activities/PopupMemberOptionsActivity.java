@@ -26,6 +26,7 @@ public class PopupMemberOptionsActivity extends AppCompatActivity {
     private TextView tvMemberDetails, tvEvents, tvReports, tvValorations, tvAssignAdmin, tvExpelMember;
     private Bundle getData;
     private Member member;
+    private String role;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +39,9 @@ public class PopupMemberOptionsActivity extends AppCompatActivity {
             return insets;
         });
 
-        loadWindow();
         loadComponents();
+        loadWindow();
+
 
         tvMemberDetails.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -85,7 +87,14 @@ public class PopupMemberOptionsActivity extends AppCompatActivity {
         }
 
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
-            getWindow().setLayout((int) (width * 0.70), (int) (tall * 0.28));
+            if(role.equals("ADMIN")){
+                getWindow().setLayout((int) (width * 0.70), (int) (tall * 0.22));
+                tvExpelMember.setVisibility(View.VISIBLE);
+                tvAssignAdmin.setVisibility(View.VISIBLE);
+            }else{
+                getWindow().setLayout((int) (width * 0.70), (int) (tall * 0.15));
+            }
+
         }else if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
             getWindow().setLayout((int) (width * 0.50), (int) (tall * 0.20));
         }
@@ -101,6 +110,7 @@ public class PopupMemberOptionsActivity extends AppCompatActivity {
         tvExpelMember = findViewById(R.id.tvExpelMember);
         getData = getIntent().getExtras();
         member = (Member) getData.getSerializable("member");
+        role = getData.getString("role");
     }
 
 }

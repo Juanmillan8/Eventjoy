@@ -36,6 +36,7 @@ import com.example.eventjoy.services.UserEventService;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -129,8 +130,8 @@ public class EventsFragment extends Fragment {
             @Override
             public void onSuccess(List<Event> events) {
                 events.sort((e1, e2) -> {
-                    LocalDateTime date1 = LocalDateTime.parse(e1.getStartDateAndTime());
-                    LocalDateTime date2 = LocalDateTime.parse(e2.getStartDateAndTime());
+                    ZonedDateTime date1 = ZonedDateTime.parse(e1.getStartDateAndTime());
+                    ZonedDateTime date2 = ZonedDateTime.parse(e2.getStartDateAndTime());
                     return date2.compareTo(date1);
                 });
 

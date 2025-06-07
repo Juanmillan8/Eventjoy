@@ -5,7 +5,10 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.CalendarContract;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.Switch;
@@ -34,6 +37,9 @@ import com.google.android.material.textfield.TextInputEditText;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 
@@ -43,8 +49,8 @@ public class CreateEventsActivity extends AppCompatActivity {
     private Button btnCreateEvent;
     private Group group;
     private Bundle getGroup;
-    private LocalDateTime eventStartDateTime;
-    private DateTimeFormatter formatterDateTime, outputFormatter;
+    private ZonedDateTime eventStartDateTime, endDateTimeEvent;
+    private DateTimeFormatter formatterDateTime;
     private EventService eventService;
     private TextInputEditText textInputEditTextStartDateAndTime, textInputEditTextTitle, textInputEditTextDescription,
             textInputEditTextDuration, textInputEditTextNumberOfParticipants, textInputEditTextStreet, textInputEditTextStreetNumber,
@@ -98,7 +104,6 @@ public class CreateEventsActivity extends AppCompatActivity {
         });
 
     }
-    //TODO PARSEAR FECHA BIEN
     private void verifications() {
         if (textInputEditTextStartDateAndTime.getText().toString().isBlank() || textInputEditTextTitle.getText().toString().isBlank() ||
                 textInputEditTextDuration.getText().toString().isBlank() || textInputEditTextNumberOfParticipants.getText().toString().isBlank() ||
@@ -108,12 +113,13 @@ public class CreateEventsActivity extends AppCompatActivity {
         ) {
             Toast.makeText(getApplicationContext(), "You must fill out all the required fields", Toast.LENGTH_SHORT).show();
         } else {
-            LocalDate date = LocalDate.parse(textInputEditTextStartDateAndTime.getText().toString().trim(), formatterDateTime);
-            String formattedDate = date.format(outputFormatter);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssX");
 
-
-            eventStartDateTime = LocalDateTime.parse(formattedDate);
-            LocalDateTime today = LocalDateTime.now();
+            LocalDateTime date = LocalDateTime.parse(textInputEditTextStartDateAndTime.getText().toString().trim(), formatterDateTime);
+            ZonedDateTime zonedDateTimeUtc = date.withSecond(0).withNano(0).atZone(ZoneOffset.UTC);
+            eventStartDateTime = zonedDateTimeUtc;
+            ZonedDateTime today = ZonedDateTime.now(ZoneOffset.UTC);
+            String formattedEventStartDateTime = formatter.format(eventStartDateTime);
 
             if(eventStartDateTime.isBefore(today) || eventStartDateTime.equals(today)){
                 Toast.makeText(getApplicationContext(), "The date must be after to today's date", Toast.LENGTH_SHORT).show();
@@ -139,15 +145,15 @@ public class CreateEventsActivity extends AppCompatActivity {
                 event.setTitle(textInputEditTextTitle.getText().toString());
                 event.setStatus(EventStatus.SCHEDULED);
                 event.setMaxParticipants(Integer.parseInt(textInputEditTextNumberOfParticipants.getText().toString()));
-                event.setStartDateAndTime(eventStartDateTime.toString());
+                event.setStartDateAndTime(formattedEventStartDateTime);
                 event.setGroupId(group.getId());
 
-                LocalDateTime startDateTimeEvent = LocalDateTime.parse(eventStartDateTime.toString());
-                LocalDateTime endDateTimeEvent = startDateTimeEvent.plusMinutes(
+
+                endDateTimeEvent = eventStartDateTime.plusMinutes(
                         Integer.parseInt(textInputEditTextDuration.getText().toString())
                 );
 
-                event.setEndDateAndTime(endDateTimeEvent.format(formatterDateTime));
+                event.setEndDateAndTime(formatter.format(endDateTimeEvent));
                 eventService.insertEvent(event);
                 Toast.makeText(getApplicationContext(), "Event successfully created", Toast.LENGTH_SHORT).show();
                 finish();
@@ -183,7 +189,6 @@ public class CreateEventsActivity extends AppCompatActivity {
         getGroup = getIntent().getExtras();
         group = (Group) getGroup.getSerializable("group");
         formatterDateTime = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     }
 
     private void loadServices(){

@@ -100,12 +100,6 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
             }
         });
 
-        memberAdapter.setOnMemberClickListener(member -> {
-            Intent showPoPup = new Intent(getApplicationContext(), PopupMemberOptionsActivity.class);
-            showPoPup.putExtra("member", member);
-            startActivity(showPoPup);
-        });
-
         linearLayoutDeleteGroup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -151,9 +145,12 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
                             Toast.makeText(getApplicationContext(), "You cannot leave the group while participating in an ongoing event.", Toast.LENGTH_SHORT).show();
                         }else{
                             if (userGroupRole.equals("ADMIN")) {
+                                Log.i("ADMIN", "ADMIN");
                                 if (memberList.isEmpty()) {
-                                    leaveGroup();
+                                    Log.i("AKI SE METE", "AKI SE METE");
                                     groupService.deleteGroup(group);
+                                    Toast.makeText(getApplicationContext(), "You have successfully left the group", Toast.LENGTH_SHORT).show();
+                                    finish();
                                 } else {
                                     AtomicInteger completedCount = new AtomicInteger(0);
                                     int totalMembers = memberList.size();
@@ -180,6 +177,7 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
                                     }
                                 }
                             } else {
+                                Log.i("NOADMIN", "NOADMIN");
                                 leaveGroup();
                             }
                         }
@@ -225,7 +223,7 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
         super.onStop();
         userGroupService.stopListening();
     }
-    //TODO TENGO QUE PONER EL ONCLICK BIEN EN EL LISTADO DE MIEMBROS
+
     private void startListeningMembers() {
         userGroupService.stopListening();
         userGroupService.getMembersByGroupId(group.getId(), idCurrentUser, new MembersCallback() {
@@ -234,6 +232,7 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
                 memberList = new ArrayList<>();
                 memberList = members;
                 memberAdapter = new MemberAdapter(getApplicationContext(), members);
+                addClickListenerToAdapter();
                 lvMembers.setAdapter(memberAdapter);
                 tvMembership.setText(members.size() + " members");
             }
@@ -242,6 +241,15 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
             public void onFailure(Exception e) {
                 Toast.makeText(getApplicationContext(), "Error querying database " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
+        });
+    }
+
+    private void addClickListenerToAdapter(){
+        memberAdapter.setOnMemberClickListener(member -> {
+            Intent showPoPup = new Intent(getApplicationContext(), PopupMemberOptionsActivity.class);
+            showPoPup.putExtra("member", member);
+            showPoPup.putExtra("role", userGroupRole);
+            startActivity(showPoPup);
         });
     }
 
@@ -280,7 +288,7 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
             linearLayoutDeleteGroup.setVisibility(View.VISIBLE);
             linearLayoutEditGroup.setVisibility(View.VISIBLE);
         }
-
+        addClickListenerToAdapter();
         configureSearchView();
     }
 

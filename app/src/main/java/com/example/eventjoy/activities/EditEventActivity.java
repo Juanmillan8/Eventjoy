@@ -33,19 +33,21 @@ import com.google.firebase.database.ValueEventListener;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
 public class EditEventActivity extends AppCompatActivity {
-    //TODO PARSEAR BIEN LA FECHA
+
     private EventService eventService;
     private Event eventEdit;
     private Toolbar toolbarActivity;
-    private DateTimeFormatter formatterDateTime;
+    private DateTimeFormatter inputFormatter , outputFormatter;
     private Button btnModifyEvent;
-    private LocalDateTime eventStartDateTime;
+    private ZonedDateTime eventStartDateTime;
     private UserEventService userEventService;
     private Bundle getData;
     private Boolean isParticipant;
@@ -113,11 +115,13 @@ public class EditEventActivity extends AppCompatActivity {
         ) {
             Toast.makeText(getApplicationContext(), "You must fill out all the required fields", Toast.LENGTH_SHORT).show();
         } else {
-            LocalDateTime dateTime = LocalDateTime.parse(textInputEditTextStartDateAndTime.getText().toString(), formatterDateTime);
-            String formattedDateTime = dateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
-            eventStartDateTime = LocalDateTime.parse(formattedDateTime);
-            LocalDateTime today = LocalDateTime.now();
+            LocalDateTime dateTime = LocalDateTime.parse(textInputEditTextStartDateAndTime.getText().toString(), outputFormatter);
+            ZonedDateTime zonedDateTimeUtc = dateTime.withSecond(0).withNano(0).atZone(ZoneOffset.UTC);
+            eventStartDateTime = zonedDateTimeUtc;
+            ZonedDateTime today = ZonedDateTime.now(ZoneOffset.UTC);
+            String formattedEventStartDateTime = inputFormatter.format(eventStartDateTime);
+
 
             if(eventStartDateTime.isBefore(today) || eventStartDateTime.equals(today)){
                 Toast.makeText(getApplicationContext(), "The date must be after to today's date", Toast.LENGTH_SHORT).show();
@@ -138,7 +142,7 @@ public class EditEventActivity extends AppCompatActivity {
 
                 eventEdit.setDescription(textInputEditTextDescription.getText().toString());
                 eventEdit.setTitle(textInputEditTextTitle.getText().toString());
-                eventEdit.setStartDateAndTime(eventStartDateTime.toString());
+                eventEdit.setStartDateAndTime(formattedEventStartDateTime);
                 eventEdit.setMaxParticipants(Integer.parseInt(textInputEditTextNumberOfParticipants.getText().toString()));
 
                 userEventService.getByEventId(eventEdit.getId(), false, new ValueEventListener() {
@@ -149,11 +153,11 @@ public class EditEventActivity extends AppCompatActivity {
                             Toast.makeText(getApplicationContext(), "The maximum number of participants cannot be set lower than the number of people already registered for the event", Toast.LENGTH_SHORT).show();
                         }else{
 
-                            LocalDateTime endDateTimeEvent = eventStartDateTime.plusMinutes(
+                            ZonedDateTime endDateTimeEvent = eventStartDateTime.plusMinutes(
                                     Integer.parseInt(textInputEditTextDuration.getText().toString())
                             );
 
-                        eventEdit.setEndDateAndTime(endDateTimeEvent.toString());
+                        eventEdit.setEndDateAndTime(inputFormatter.format(endDateTimeEvent));
                         eventService.updateEvent(eventEdit);
                         Toast.makeText(getApplicationContext(), "Event successfully modified", Toast.LENGTH_SHORT).show();
                             Intent detailsEventIntent = new Intent(getApplicationContext(), EventDetailsActivity.class);
@@ -188,7 +192,8 @@ public class EditEventActivity extends AppCompatActivity {
 
     private void loadComponents(){
         btnModifyEvent = findViewById(R.id.btnModifyEvent);
-        formatterDateTime = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssX");
+        outputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         toolbarActivity = findViewById(R.id.toolbarActivity);
         setSupportActionBar(toolbarActivity);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -213,7 +218,7 @@ public class EditEventActivity extends AppCompatActivity {
 
         textInputEditTextTitle.setText(eventEdit.getTitle());
         textInputEditTextDescription.setText(eventEdit.getDescription());
-        textInputEditTextDuration.setText(String.valueOf(Duration.between(LocalDateTime.parse(eventEdit.getStartDateAndTime()), LocalDateTime.parse(eventEdit.getEndDateAndTime())).toMinutes()));
+        textInputEditTextDuration.setText(String.valueOf(Duration.between(ZonedDateTime.parse(eventEdit.getStartDateAndTime()), ZonedDateTime.parse(eventEdit.getEndDateAndTime())).toMinutes()));
         textInputEditTextNumberOfParticipants.setText(String.valueOf(eventEdit.getMaxParticipants()));
         textInputEditTextStreet.setText(eventEdit.getAddress().getStreet());
         textInputEditTextStreetNumber.setText(eventEdit.getAddress().getNumberStreet());
@@ -223,7 +228,10 @@ public class EditEventActivity extends AppCompatActivity {
         textInputEditTextCity.setText(eventEdit.getAddress().getCity());
         textInputEditTextProvince.setText(eventEdit.getAddress().getProvince());
         textInputEditTextMunicipality.setText(eventEdit.getAddress().getMunicipality());
-        textInputEditTextStartDateAndTime.setText(eventEdit.getStartDateAndTime());
+
+        ZonedDateTime zonedDateTime = ZonedDateTime.parse(eventEdit.getStartDateAndTime(), inputFormatter);
+
+        textInputEditTextStartDateAndTime.setText(outputFormatter.format(zonedDateTime));
 
     }
 

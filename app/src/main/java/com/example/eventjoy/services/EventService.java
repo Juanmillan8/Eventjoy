@@ -32,6 +32,8 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -78,14 +80,16 @@ public class EventService {
                     return;
                 }
 
+                Log.i("ISREGISTERED", eventList.toString());
+
                 AtomicBoolean found = new AtomicBoolean(false);
                 AtomicInteger processedCount = new AtomicInteger(0);
                 int totalEvents = eventList.size();
-                //TODO PARSEAR BIEN LA FECHA
                 for (Event event : eventList) {
-                    LocalDateTime startDateTimeEvent = LocalDateTime.parse(event.getStartDateAndTime());
-                    LocalDateTime endDateTimeEvent = LocalDateTime.parse(event.getEndDateAndTime());
-                    LocalDateTime today = LocalDateTime.now();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssX");
+                    ZonedDateTime startDateTimeEvent = ZonedDateTime.parse(event.getStartDateAndTime(), formatter);
+                    ZonedDateTime endDateTimeEvent = ZonedDateTime.parse(event.getEndDateAndTime(), formatter);
+                    ZonedDateTime today = ZonedDateTime.now(ZoneOffset.UTC);
                     if (endDateTimeEvent.isAfter(today) && (startDateTimeEvent.isBefore(today) || startDateTimeEvent.equals(today))) {
                         databaseReferenceUserEvent.orderByChild("eventId").equalTo(event.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
