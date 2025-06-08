@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public class Message extends DomainEntity{
 
-    private LocalDateTime sentAt;
+    private String sentAt;
     private String content;
     private String senderUserId;
     private String groupId;
@@ -13,11 +13,11 @@ public class Message extends DomainEntity{
         super();
     }
 
-    public LocalDateTime getSentAt() {
+    public String getSentAt() {
         return sentAt;
     }
 
-    public void setSentAt(LocalDateTime sentAt) {
+    public void setSentAt(String sentAt) {
         this.sentAt = sentAt;
     }
 
@@ -48,7 +48,7 @@ public class Message extends DomainEntity{
     @Override
     public String toString() {
         return "Message{" +
-                "sentAt=" + sentAt +
+                "sentAt='" + sentAt + '\'' +
                 ", content='" + content + '\'' +
                 ", senderUserId='" + senderUserId + '\'' +
                 ", groupId='" + groupId + '\'' +
