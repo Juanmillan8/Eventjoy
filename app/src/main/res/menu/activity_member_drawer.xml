@@ -25,6 +25,10 @@
             android:icon="@drawable/icon_invitation"
             android:title="Invitations received" />
         <item
+            android:id="@+id/listReportsFragment"
+            android:icon="@drawable/icon_reports"
+            android:title="Reports received" />
+        <item
             android:id="@+id/logout"
             android:icon="@drawable/logout_icon"
             android:title="Logout" />

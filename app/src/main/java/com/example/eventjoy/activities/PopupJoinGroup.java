@@ -33,6 +33,9 @@ import com.squareup.picasso.Picasso;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class PopupJoinGroup extends AppCompatActivity {
@@ -65,7 +68,9 @@ public class PopupJoinGroup extends AppCompatActivity {
         btnJoinGroup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                LocalDateTime today = LocalDateTime.now();
+                LocalDateTime localDateTime = LocalDateTime.now().withNano(0);
+                ZonedDateTime utcDateTime = localDateTime.atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneOffset.UTC);
+                String formattedToday = utcDateTime.format(DateTimeFormatter.ISO_INSTANT);
 
                 if(invitation!=null){
                     invitationService.deleteInvitation(invitation);
@@ -74,7 +79,7 @@ public class PopupJoinGroup extends AppCompatActivity {
                 UserGroup us = new UserGroup();
                 us.setGroupId(group.getId());
                 us.setAdmin(false);
-                us.setJoinedAt(today.toString());
+                us.setJoinedAt(formattedToday);
                 us.setUserId(sharedPreferences.getString("id", ""));
                 us.setNotificationsEnabled(true);
                 userGroupService.insertUserGroup(us);

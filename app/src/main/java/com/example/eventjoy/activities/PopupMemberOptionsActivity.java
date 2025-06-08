@@ -82,6 +82,16 @@ public class PopupMemberOptionsActivity extends AppCompatActivity {
             }
         });
 
+        tvReports.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent listReportsIntent = new Intent(getApplicationContext(), ListReportsContainerActivity.class);
+                listReportsIntent.putExtra("member", member);
+                listReportsIntent.putExtra("group", group);
+                startActivity(listReportsIntent);
+            }
+        });
+
         tvAssignRemoveAdmin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -200,8 +210,6 @@ public class PopupMemberOptionsActivity extends AppCompatActivity {
         member = (Member) getData.getSerializable("member");
         group = (Group) getData.getSerializable("group");
         role = getData.getString("role");
-
-
     }
 
     private void loadServices() {

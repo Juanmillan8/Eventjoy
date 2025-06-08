@@ -30,4 +30,9 @@
         android:name="com.example.eventjoy.fragments.ListInvitationsFragment"
         android:label="Invitations received"
         tools:layout="@layout/fragment_list_invitations" />
+    <fragment
+        android:id="@+id/listReportsFragment"
+        android:name="com.example.eventjoy.fragments.ListReportsFragment"
+        android:label="Reports received"
+        tools:layout="@layout/fragment_list_reports" />
 </navigation>

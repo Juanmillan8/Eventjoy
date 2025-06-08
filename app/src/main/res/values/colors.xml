@@ -11,4 +11,7 @@
     <color name="eventFinished">#9E9E9E</color>
     <color name="eventScheduled">#2196F3</color>
     <color name="eventOngoing">#4CAF50</color>
+    <color name="reportPending">#FFA000</color>
+    <color name="reportApproved">#388E3C</color>
+    <color name="reportRejected">#D32F2F</color>
 </resources>

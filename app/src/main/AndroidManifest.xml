@@ -25,6 +25,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Eventjoy">
         <activity
+            android:name=".activities.CreateReportsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.ListReportsContainerActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.ListMembersActivity"
             android:exported="false" />
         <activity
