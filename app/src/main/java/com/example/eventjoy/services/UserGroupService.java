@@ -55,25 +55,51 @@ public class UserGroupService {
         return u.getId();
     }
 
-    public void deleteUserGroup(String groupId, String userId, SimpleCallback callback) {
+    public void asignAdmin(String groupId, String userId, SimpleCallback callback) {
         databaseReferenceUserGroups.orderByChild("userId").equalTo(userId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Log.i("GROUP ID", groupId);
                 UserGroup userGroup = new UserGroup();
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    if (userGroup.getGroupId().equals(groupId)) {
+                    if (snapshot.getValue(UserGroup.class).getGroupId().equals(groupId)) {
                         userGroup = snapshot.getValue(UserGroup.class);
-                        Log.i("US" + userGroup.getGroupId(), groupId);
                         break;
                     }
 
                 }
-                Log.i("PRIMERO", "SESALE PRIMERO");
-                Log.i("USERGROUP", userGroup.getId());
-                databaseReferenceUserGroups.child(userGroup.getId()).removeValue();
-                Log.i("PRIMERO2", "PRIMERO2");
+                if(userGroup.getAdmin()){
+                    userGroup.setAdmin(false);
+                    databaseReferenceUserGroups.child(userGroup.getId()).setValue(userGroup);
+                    callback.onSuccess("You have successfully removed this user’s administrator privileges");
+                }else{
+                    userGroup.setAdmin(true);
+                    databaseReferenceUserGroups.child(userGroup.getId()).setValue(userGroup);
+                    callback.onSuccess("User assigned as administrator successfully");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Error - UserGroupService - deleteUserGroup", error.getMessage());
+                callback.onCancelled("Error querying the database: " + error.getMessage());
+            }
+        });
+    }
+
+    public void deleteUserGroup(String groupId, String userId, SimpleCallback callback) {
+        databaseReferenceUserGroups.orderByChild("userId").equalTo(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                UserGroup userGroup = new UserGroup();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    if (snapshot.getValue(UserGroup.class).getGroupId().equals(groupId)) {
+                        userGroup = snapshot.getValue(UserGroup.class);
+                        break;
+                    }
+
+                }
                 callback.onSuccess("You have successfully left the group");
+                databaseReferenceUserGroups.child(userGroup.getId()).removeValue();
             }
 
             @Override
@@ -91,8 +117,6 @@ public class UserGroupService {
                 if (dataSnapshot.exists()) {
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         UserGroup userGroup = snapshot.getValue(UserGroup.class);
-                        Log.i("USERGROUP", userGroup.getId());
-                        Log.i("ISADMIN", userGroup.getAdmin().toString());
                         if (userGroup.getGroupId().equals(groupId)) {
                             if (userGroup.getAdmin()) {
                                 callback.onSuccess(UserGroupRole.ADMIN);

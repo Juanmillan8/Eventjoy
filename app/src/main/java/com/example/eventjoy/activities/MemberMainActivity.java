@@ -67,7 +67,7 @@ public class MemberMainActivity extends AppCompatActivity {
 
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
-        mAppBarConfiguration = new AppBarConfiguration.Builder(R.id.homeMemberFragment, R.id.detailsMemberFragment, R.id.listValorationsFragment, R.id.eventsFragment).setOpenableLayout(drawer).build();
+        mAppBarConfiguration = new AppBarConfiguration.Builder(R.id.homeMemberFragment, R.id.detailsMemberFragment, R.id.listValorationsFragment, R.id.eventsFragment, R.id.listInvitationsFragment).setOpenableLayout(drawer).build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_member_main);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
@@ -88,6 +88,9 @@ public class MemberMainActivity extends AppCompatActivity {
                 return true;
             }else if (item.getItemId() == R.id.eventsFragment) {
                 navController.navigate(R.id.eventsFragment);
+                return true;
+            }else if (item.getItemId() == R.id.listInvitationsFragment) {
+                navController.navigate(R.id.listInvitationsFragment);
                 return true;
             }else if (item.getItemId() == R.id.listValorationsFragment) {
                 navController.navigate(R.id.listValorationsFragment);

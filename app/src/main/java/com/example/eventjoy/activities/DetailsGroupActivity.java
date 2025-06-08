@@ -62,7 +62,7 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
     private Group group;
     private String userGroupRole;
     private TextView tvTitle, tvDescription;
-    private ImageView groupIcon, ivBack;
+    private ImageView groupIcon, ivBack, ivAddPerson;
     private RecyclerView lvMembers;
     private MemberAdapter memberAdapter;
     private SearchView svMembers;
@@ -97,6 +97,15 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
                 groupActivityIntent.putExtra("userGroupRole", userGroupRole);
                 startActivity(groupActivityIntent);
                 finish();
+            }
+        });
+
+        ivAddPerson.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent listMembersIntent = new Intent(getApplicationContext(), ListMembersActivity.class);
+                listMembersIntent.putExtra("group", group);
+                startActivity(listMembersIntent);
             }
         });
 
@@ -145,9 +154,7 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
                             Toast.makeText(getApplicationContext(), "You cannot leave the group while participating in an ongoing event.", Toast.LENGTH_SHORT).show();
                         }else{
                             if (userGroupRole.equals("ADMIN")) {
-                                Log.i("ADMIN", "ADMIN");
                                 if (memberList.isEmpty()) {
-                                    Log.i("AKI SE METE", "AKI SE METE");
                                     groupService.deleteGroup(group);
                                     Toast.makeText(getApplicationContext(), "You have successfully left the group", Toast.LENGTH_SHORT).show();
                                     finish();
@@ -231,7 +238,7 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
             public void onSuccess(List<Member> members) {
                 memberList = new ArrayList<>();
                 memberList = members;
-                memberAdapter = new MemberAdapter(getApplicationContext(), members);
+                memberAdapter = new MemberAdapter(getApplicationContext(), members, false);
                 addClickListenerToAdapter();
                 lvMembers.setAdapter(memberAdapter);
                 tvMembership.setText(members.size() + " members");
@@ -249,13 +256,15 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
             Intent showPoPup = new Intent(getApplicationContext(), PopupMemberOptionsActivity.class);
             showPoPup.putExtra("member", member);
             showPoPup.putExtra("role", userGroupRole);
+            showPoPup.putExtra("group", group);
             startActivity(showPoPup);
         });
     }
 
     private void loadComponents() {
+        ivAddPerson = findViewById(R.id.ivAddPerson);
         memberList = new ArrayList<>();
-        memberAdapter = new MemberAdapter(getApplicationContext(), memberList);
+        memberAdapter = new MemberAdapter(getApplicationContext(), memberList, false);
         linearLayoutLeaveTheGroup = findViewById(R.id.linearLayoutLeaveTheGroup);
         linearLayoutEditGroup = findViewById(R.id.linearLayoutEditGroup);
         linearLayoutDeleteGroup = findViewById(R.id.linearLayoutDeleteGroup);
@@ -287,9 +296,15 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
         if (userGroupRole.equals("ADMIN")) {
             linearLayoutDeleteGroup.setVisibility(View.VISIBLE);
             linearLayoutEditGroup.setVisibility(View.VISIBLE);
+
+            if(group.getVisibility().name().equals("PRIVATE")){
+                ivAddPerson.setVisibility(View.VISIBLE);
+            }
         }
         addClickListenerToAdapter();
         configureSearchView();
+
+
     }
 
     private void loadServices() {

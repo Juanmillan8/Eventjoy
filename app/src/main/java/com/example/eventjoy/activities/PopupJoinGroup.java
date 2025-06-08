@@ -23,9 +23,11 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.eventjoy.R;
 import com.example.eventjoy.enums.UserGroupRole;
 import com.example.eventjoy.models.Group;
+import com.example.eventjoy.models.Invitation;
 import com.example.eventjoy.models.Member;
 import com.example.eventjoy.models.UserGroup;
 import com.example.eventjoy.models.Valoration;
+import com.example.eventjoy.services.InvitationService;
 import com.example.eventjoy.services.UserGroupService;
 import com.squareup.picasso.Picasso;
 
@@ -35,13 +37,15 @@ import java.time.format.DateTimeFormatter;
 
 public class PopupJoinGroup extends AppCompatActivity {
 
-    private Bundle getGroup;
+    private Bundle getData;
     private Group group;
+    private Invitation invitation;
     private TextView tvGroupTitle, tvInformativeText;
     private ImageView iconGroup;
     private Button btnJoinGroup;
     private SharedPreferences sharedPreferences;
     private UserGroupService userGroupService;
+    private InvitationService invitationService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +66,10 @@ public class PopupJoinGroup extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 LocalDateTime today = LocalDateTime.now();
+
+                if(invitation!=null){
+                    invitationService.deleteInvitation(invitation);
+                }
 
                 UserGroup us = new UserGroup();
                 us.setGroupId(group.getId());
@@ -110,8 +118,15 @@ public class PopupJoinGroup extends AppCompatActivity {
         iconGroup = findViewById(R.id.iconGroup);
         tvInformativeText = findViewById(R.id.tvInformativeText);
 
-        getGroup = getIntent().getExtras();
-        group = (Group) getGroup.getSerializable("group");
+        getData = getIntent().getExtras();
+        group = (Group) getData.getSerializable("group");
+        invitation = (Invitation) getData.getSerializable("invitation");
+
+        if(invitation==null){
+            Log.i("ESNULO", "ESNULO");
+        }else{
+            Log.i("NOESNULO", "NOESNULO");
+        }
 
         if (group.getIcon() != null && !group.getIcon().isEmpty()) {
             Picasso.get().load(group.getIcon()).into(iconGroup);
@@ -123,6 +138,7 @@ public class PopupJoinGroup extends AppCompatActivity {
 
     private void loadServices(){
         userGroupService = new UserGroupService(getApplicationContext());
+        invitationService = new InvitationService(getApplicationContext());
     }
 
 }

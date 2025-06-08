@@ -214,7 +214,7 @@ public class EventDetailsActivity extends AppCompatActivity {
         memberService.getByEventId(event.getId(), new MembersCallback() {
             @Override
             public void onSuccess(List<Member> members) {
-                memberAdapter = new MemberAdapter(getApplicationContext(), members);
+                memberAdapter = new MemberAdapter(getApplicationContext(), members, false);
                 lvMembers.setAdapter(memberAdapter);
                 numParticipants=members.size();
                 tvMembersNumber.setText(members.size() + "/" + event.getMaxParticipants() + " participants");

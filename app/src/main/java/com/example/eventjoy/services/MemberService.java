@@ -1,6 +1,7 @@
 package com.example.eventjoy.services;
 
 import android.content.Context;
+
 import androidx.annotation.NonNull;
 
 import com.example.eventjoy.callbacks.MembersCallback;
@@ -26,13 +27,16 @@ public class MemberService {
 
     private DatabaseReference databaseReferenceMembers;
     private DatabaseReference databaseReferenceUserEvents;
+    private DatabaseReference databaseReferenceUserGroups;
 
     private ValueEventListener userEventListener;
     private ValueEventListener memberListener;
+    private ValueEventListener userGroupsListener;
 
     public MemberService(Context context) {
         databaseReferenceMembers = FirebaseDatabase.getInstance().getReference().child("members");
         databaseReferenceUserEvents = FirebaseDatabase.getInstance().getReference().child("userEvents");
+        databaseReferenceUserGroups = FirebaseDatabase.getInstance().getReference().child("userGroups");
     }
 
     public String insertMember(Member m) {
@@ -41,6 +45,53 @@ public class MemberService {
 
         newReference.setValue(m);
         return m.getId();
+    }
+
+    public void getMembersNotInGroup(String groupId, MembersCallback callback) {
+        if (userGroupsListener != null) {
+            databaseReferenceUserGroups.removeEventListener(userGroupsListener);
+        }
+
+        userGroupsListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                List<String> userIds = new ArrayList<>();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    UserGroup userGroup = snapshot.getValue(UserGroup.class);
+                    userIds.add(userGroup.getUserId());
+                }
+
+                if (memberListener != null) {
+                    databaseReferenceMembers.removeEventListener(memberListener);
+                }
+
+                memberListener = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        List<Member> members = new ArrayList<>();
+                        for (DataSnapshot memberSnap : snapshot.getChildren()) {
+                            Member member = memberSnap.getValue(Member.class);
+                            if (!userIds.contains(member.getId())) {
+                                members.add(member);
+                            }
+                        }
+                        callback.onSuccess(members);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        callback.onFailure(error.toException());
+                    }
+                };
+                databaseReferenceMembers.addValueEventListener(memberListener);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                callback.onFailure(error.toException());
+            }
+        };
+        databaseReferenceUserGroups.orderByChild("groupId").equalTo(groupId).addValueEventListener(userGroupsListener);
     }
 
     public void getByEventId(String eventId, MembersCallback callback) {
@@ -54,7 +105,7 @@ public class MemberService {
                 List<String> userIds = new ArrayList<>();
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     UserEvent userEvent = snapshot.getValue(UserEvent.class);
-                        userIds.add(userEvent.getUserId());
+                    userIds.add(userEvent.getUserId());
                 }
 
                 if (userIds.isEmpty()) {
@@ -112,7 +163,7 @@ public class MemberService {
         query.addListenerForSingleValueEvent(listener);
     }
 
-    public void checkRepeatedUsername(String patientUsername, ValueEventListener listener){
+    public void checkRepeatedUsername(String patientUsername, ValueEventListener listener) {
         Query query = databaseReferenceMembers.orderByChild("username").equalTo(patientUsername);
         query.addListenerForSingleValueEvent(listener);
     }
@@ -129,6 +180,10 @@ public class MemberService {
         if (memberListener != null) {
             databaseReferenceMembers.removeEventListener(memberListener);
             memberListener = null;
+        }
+        if (userGroupsListener != null) {
+            databaseReferenceUserGroups.removeEventListener(userGroupsListener);
+            userGroupsListener = null;
         }
     }
 

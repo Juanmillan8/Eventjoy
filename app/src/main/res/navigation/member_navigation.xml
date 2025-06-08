@@ -25,4 +25,9 @@
         android:name="com.example.eventjoy.fragments.EventsFragment"
         android:label="My events"
         tools:layout="@layout/fragment_events" />
+    <fragment
+        android:id="@+id/listInvitationsFragment"
+        android:name="com.example.eventjoy.fragments.ListInvitationsFragment"
+        android:label="Invitations received"
+        tools:layout="@layout/fragment_list_invitations" />
 </navigation>

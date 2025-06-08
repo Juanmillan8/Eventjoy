@@ -21,6 +21,10 @@
             android:icon="@drawable/icon_event"
             android:title="My events" />
         <item
+            android:id="@+id/listInvitationsFragment"
+            android:icon="@drawable/icon_invitation"
+            android:title="Invitations received" />
+        <item
             android:id="@+id/logout"
             android:icon="@drawable/logout_icon"
             android:title="Logout" />

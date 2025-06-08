@@ -47,6 +47,15 @@
                 android:layout_height="24dp"
                 android:layout_gravity="center_vertical"
                 app:srcCompat="@drawable/notifications_icon" />
+
+            <ImageView
+                android:id="@+id/ivAddPerson"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginLeft="10dp"
+                android:visibility="gone"
+                android:layout_gravity="center_vertical"
+                app:srcCompat="@drawable/icon_add_person" />
         </LinearLayout>
 
         <com.google.android.material.imageview.ShapeableImageView

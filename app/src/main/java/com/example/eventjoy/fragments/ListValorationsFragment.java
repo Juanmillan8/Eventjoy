@@ -17,7 +17,9 @@ import android.widget.ListView;
 import android.widget.Toast;
 import com.example.eventjoy.R;
 import com.example.eventjoy.activities.CreateValorationsActivity;
+import com.example.eventjoy.adapters.MemberAdapter;
 import com.example.eventjoy.adapters.ValorationAdapter;
+import com.example.eventjoy.callbacks.ValorationsCallback;
 import com.example.eventjoy.models.Member;
 import com.example.eventjoy.models.Valoration;
 import com.example.eventjoy.services.ValorationService;
@@ -50,14 +52,14 @@ public class ListValorationsFragment extends Fragment {
 
         loadServices();
         loadComponents();
-        //TODO ARREGLAR VALORACIONES, CUANDO VOY A VER MIS VALORACIONES DA ERROR PORQUE SALE EL BOTON DE AÑADIR
+
         btnAddValoration.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 valorationMade=false;
                 for (Valoration valoration : valorationList) {
                     if(valoration.getRaterUserId().equals(sharedPreferences.getString("id", ""))){
-                        Toast.makeText(getContext(), "You cannot rate the same member more than once.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "You cannot rate the same member more than once", Toast.LENGTH_SHORT).show();
                         valorationMade=true;
                         return;
                     }
@@ -75,6 +77,34 @@ public class ListValorationsFragment extends Fragment {
         return  rootView;
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        startListeningValorations();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        valorationService.stopListening();
+    }
+
+    private void startListeningValorations() {
+        valorationService.getByRatedUserId(ratedUserId, new ValorationsCallback() {
+            @Override
+            public void onSuccess(List<Valoration> valorations) {
+                valorationList = valorations;
+                valorationAdapter = new ValorationAdapter(getContext(), valorations);
+                lvValorations.setAdapter(valorationAdapter);
+            }
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(getActivity().getApplication(), "Error querying database " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+
     private void loadComponents(){
         valorationList = new ArrayList<>();
         btnAddValoration = rootView.findViewById(R.id.btnAddValoration);
@@ -82,32 +112,12 @@ public class ListValorationsFragment extends Fragment {
         sharedPreferences = getActivity().getApplication().getSharedPreferences("EventjoyPreferences", Context.MODE_PRIVATE);
 
         if (getArguments() != null) {
-            Log.i("1","1");
             m = (Member) getArguments().getSerializable("member");
             ratedUserId=m.getId();
+            btnAddValoration.setVisibility(View.VISIBLE);
         }else{
-            Log.i("2","2");
             ratedUserId = sharedPreferences.getString("id", "");
         }
-
-
-        valorationService.getByRatedUserId(ratedUserId, new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                valorationList.clear();
-
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Valoration valoration = snapshot.getValue(Valoration.class);
-                    valorationList.add(valoration);
-                }
-                valorationAdapter = new ValorationAdapter(getContext(), valorationList);
-                lvValorations.setAdapter(valorationAdapter);
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(getActivity().getApplication(), "Error querying database " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
     private void loadServices(){

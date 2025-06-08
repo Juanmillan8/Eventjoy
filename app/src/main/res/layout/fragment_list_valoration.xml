@@ -33,7 +33,7 @@
                 android:layout_marginTop="10dp"
                 android:textSize="40sp"
                 android:text="4,5" />
-poner bien la interfaz
+
             <RatingBar
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -95,6 +95,7 @@ poner bien la interfaz
         app:tint="@color/white"
         android:backgroundTint="@color/mediumGreen"
         android:alpha="0.6"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
