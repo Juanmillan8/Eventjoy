@@ -152,7 +152,6 @@ public class SignUpActivity extends AppCompatActivity {
                 verifications();
             }
         });
-        //TODO AL HACER UNA FOTO DE CAMARA, LA IMAGEN SALE DE LADO
         btnCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -4,7 +4,6 @@ public class UserEvent extends DomainEntity{
 
     private String userId;
     private String eventId;
-    private Boolean notificationsEnabled;
 
     public UserEvent() {
         super();
@@ -26,20 +25,5 @@ public class UserEvent extends DomainEntity{
         this.eventId = eventId;
     }
 
-    public Boolean getNotificationsEnabled() {
-        return notificationsEnabled;
-    }
 
-    public void setNotificationsEnabled(Boolean notificationsEnabled) {
-        this.notificationsEnabled = notificationsEnabled;
-    }
-
-    @Override
-    public String toString() {
-        return "UserEvent{" +
-                "userId='" + userId + '\'' +
-                ", eventId='" + eventId + '\'' +
-                ", notificationsEnabled=" + notificationsEnabled +
-                '}';
-    }
 }

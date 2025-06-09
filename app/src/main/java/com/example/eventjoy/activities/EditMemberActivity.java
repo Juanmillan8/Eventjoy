@@ -353,8 +353,6 @@ public class EditMemberActivity extends AppCompatActivity {
                 memberEdit.setPhoto(null);
                 editMember();
             }
-
-
         }
     }
 

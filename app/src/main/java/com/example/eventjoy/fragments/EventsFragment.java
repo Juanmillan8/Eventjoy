@@ -194,6 +194,10 @@ public class EventsFragment extends Fragment {
         if (role != null && role.equals("ADMIN")) {
             btnCreateEvent.setVisibility(View.VISIBLE);
         }
+
+        //TODO AL TRAER LOS EVENTOS COMPROBAR LA FECHA, DEPENDIENDO DE LA FECHA TENGO QUE MOSTRAR SCHEDULED, ONGOING O FINISH
+        //TODO EN EL EVENT DETAILS TAMBIEN MODIFICARLO, PARA QUE A LA HORA DE TRAERLO EL EVENTO MOSTRAR SHCEDULED, ONGOING O FINISH
+
     }
 
     private void loadServices() {

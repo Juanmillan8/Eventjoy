@@ -85,7 +85,6 @@ public class DetailsMemberFragment extends Fragment {
 
         tvBirthdate.setText(outputFormatter.format(birthDate));
 
-        //TODO QUITAR LO DEL NIVEL
         tvLevel.setText("Level " + member.getLevel().toString());
 
         if(member.getId().equals(sharedPreferences.getString("id", ""))){

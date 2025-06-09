@@ -160,7 +160,6 @@ public class EventDetailsActivity extends AppCompatActivity {
                                 UserEvent ue = new UserEvent();
                                 ue.setEventId(event.getId());
                                 ue.setUserId(idCurrentUser);
-                                ue.setNotificationsEnabled(true);
                                 userEventService.joinTheEvent(ue);
                                 Toast.makeText(getApplicationContext(), "You have successfully joined the event", Toast.LENGTH_SHORT).show();
                                 btnJoinTheEvent.setVisibility(View.GONE);

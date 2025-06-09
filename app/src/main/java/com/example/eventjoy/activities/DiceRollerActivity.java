@@ -23,7 +23,6 @@ import com.example.eventjoy.R;
 import java.util.Random;
 
 public class DiceRollerActivity extends AppCompatActivity {
-
     private Toolbar toolbarActivity;
     private ImageView ivDice1, ivDice2, ivDice3, ivDice4, ivDice5, ivDice6, ivDice7, ivDice8, ivDice9, ivDice10;
     private ImageButton ibAddDice, ibRemoveDice;
@@ -68,7 +67,7 @@ public class DiceRollerActivity extends AppCompatActivity {
     }
 
     private void throwDice(){
-        if(numberDice!=null || numberDice>0){
+        if(numberDice!=null){
             Integer accumulator = 0;
             for (int i=0;i<numberDice;i++){
                 Random random = new Random();
@@ -300,6 +299,8 @@ public class DiceRollerActivity extends AppCompatActivity {
 
             }
             tvTotal.setText("Total: " + accumulator);
+        }else{
+            Log.i("ES NULO", "ES NULO");
         }
     }
 
