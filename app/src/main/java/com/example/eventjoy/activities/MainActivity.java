@@ -19,7 +19,9 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.eventjoy.R;
 import com.example.eventjoy.enums.Provider;
 import com.example.eventjoy.enums.Role;
+import com.example.eventjoy.models.Admin;
 import com.example.eventjoy.models.Member;
+import com.example.eventjoy.services.AdminService;
 import com.example.eventjoy.services.MemberService;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -58,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
     private GoogleSignInClient googleSignInClient;
     private GoogleSignInOptions googleSignInOptions;
     private String role;
+    private AdminService adminService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +96,9 @@ public class MainActivity extends AppCompatActivity {
             if (role.equals(Role.MEMBER.name())) {
                 Intent memberMainIntent = new Intent(getApplicationContext(), MemberMainActivity.class);
                 startActivity(memberMainIntent);
+            }else if (role.equals(Role.ADMIN.name())) {
+                Intent adminMainIntent = new Intent(getApplicationContext(), AdminMainActivity.class);
+                startActivity(adminMainIntent);
             }else{
                 Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
                 startActivity(intent);
@@ -176,9 +182,34 @@ public class MainActivity extends AppCompatActivity {
                     Intent memberMainIntent = new Intent(getApplicationContext(), MemberMainActivity.class);
                     startActivity(memberMainIntent);
                 }else{
-                    Toast.makeText(getApplicationContext(), "Signed in with Google. Finish registration to use the app.", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
-                    startActivity(intent);
+                    adminService.getAdminByUid(uid, new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()) {
+                                Admin a = snapshot.getChildren().iterator().next().getValue(Admin.class);
+                                SharedPreferences.Editor editor = sharedPreferences.edit();
+                                editor.putString("email", email);
+                                editor.putString("role", Role.ADMIN.name());
+                                editor.putString("id", a.getId());
+                                editor.apply();
+
+                                if (a.getProvider().equals(Provider.EMAIL) && provider.equals(Provider.GOOGLE)) {
+                                    a.setProvider(Provider.GOOGLE);
+                                    adminService.updateAdmin(a);
+                                }
+                                Intent adminMainIntent = new Intent(getApplicationContext(), AdminMainActivity.class);
+                                startActivity(adminMainIntent);
+                            }else{
+                                Toast.makeText(getApplicationContext(), "Signed in with Google. Finish registration to use the app.", Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
+                                startActivity(intent);
+                            }
+                        }
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+                            Toast.makeText(getApplicationContext(), "Error querying database " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 }
             }
 
@@ -247,6 +278,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadServices(){
         memberService = new MemberService(getApplicationContext());
+        adminService = new AdminService(getApplicationContext());
     }
 
 }

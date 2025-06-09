@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class ListValorationsFragment extends Fragment {
-
+    //TODO PONER EL NOMBRE DE USUARIO PARA QUE SE AJUSTE AL CONTENEDOR
     private View rootView;
     private ListView lvValorations;
     private ValorationService valorationService;

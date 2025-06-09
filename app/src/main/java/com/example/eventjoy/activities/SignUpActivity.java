@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -21,6 +23,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -34,6 +37,7 @@ import androidx.core.content.FileProvider;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
 import com.cloudinary.android.callback.ErrorInfo;
 import com.cloudinary.android.callback.UploadCallback;
 import com.example.eventjoy.R;
@@ -58,9 +62,14 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
@@ -143,7 +152,7 @@ public class SignUpActivity extends AppCompatActivity {
                 verifications();
             }
         });
-
+        //TODO AL HACER UNA FOTO DE CAMARA, LA IMAGEN SALE DE LADO
         btnCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -241,6 +250,7 @@ public class SignUpActivity extends AppCompatActivity {
         } else if (textInputEditTextName.getText().toString().length() > 20) {
             Toast.makeText(getApplicationContext(), "The name must have a maximum of 20 characters", Toast.LENGTH_LONG).show();
         } else {
+            //TODO Verificar formato de fecha
             LocalDate date = LocalDate.parse(textInputEditTextBirthdate.getText().toString(), inputFormatter);
             String formattedDate = date.format(outputFormatter);
 
@@ -266,10 +276,11 @@ public class SignUpActivity extends AppCompatActivity {
                                     if (snapshot.exists()) {
                                         progressDialog.dismiss();
                                         Toast.makeText(getApplicationContext(), "The username " + textInputEditTextUsername.getText().toString() + " is already registered, try a different one", Toast.LENGTH_LONG).show();
-                                    }else{
+                                    } else {
                                         signUpMember();
                                     }
                                 }
+
                                 @Override
                                 public void onCancelled(@NonNull DatabaseError error) {
                                     //Se cierra la ventana de carga
@@ -279,6 +290,7 @@ public class SignUpActivity extends AppCompatActivity {
                             });
                         }
                     }
+
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
                         //Se cierra la ventana de carga
@@ -385,7 +397,7 @@ public class SignUpActivity extends AppCompatActivity {
         }
     }
 
-    private void saveProfileImage(Member m){
+    private void saveProfileImage(Member m) {
         CloudinaryManager.uploadImage(getApplicationContext(), mImageUri, new UploadCallback() {
             @Override
             public void onStart(String requestId) {
@@ -481,7 +493,7 @@ public class SignUpActivity extends AppCompatActivity {
                 if (data != null) {
                     mImageUri = data.getData();
                     profileIcon.setImageURI(mImageUri);
-                    changedImage=true;
+                    changedImage = true;
                 }
             }
         }
@@ -536,8 +548,36 @@ public class SignUpActivity extends AppCompatActivity {
             tvPassword.setVisibility(View.GONE);
 
             if (user.getPhotoUrl() != null) {
-                Picasso.get().load(Uri.parse(String.valueOf(user.getPhotoUrl()))).into(profileIcon);
+                Picasso.get().load(user.getPhotoUrl()).into(profileIcon);
                 changedImage = true;
+
+                // Guardar imagen en archivo temporal usando Picasso (esto lo hace en segundo plano)
+                Picasso.get().load(user.getPhotoUrl()).into(new Target() {
+                    @Override
+                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                        try {
+                            File file = createImageFile();
+                            FileOutputStream out = new FileOutputStream(file);
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                            out.flush();
+                            out.close();
+
+                            mImageUri = FileProvider.getUriForFile(SignUpActivity.this, getPackageName(), file);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            Log.e("ImageSaveError", "No se pudo guardar imagen: " + e.getMessage());
+                        }
+                    }
+
+                    @Override
+                    public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+                        Log.e("Picasso", "Error al cargar imagen: " + e.getMessage());
+                    }
+
+                    @Override
+                    public void onPrepareLoad(Drawable placeHolderDrawable) {
+                    }
+                });
             }
         }
     }

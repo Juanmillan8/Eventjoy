@@ -97,7 +97,7 @@ public class ListReportsFragment extends Fragment {
             @Override
             public void onSuccess(List<Report> reports) {
                 reportList = reports;
-                reportAdapter = new ReportAdapter(getContext(), reports);
+                reportAdapter = new ReportAdapter(getContext(), reports, false);
                 lvReports.setAdapter(reportAdapter);
             }
             @Override

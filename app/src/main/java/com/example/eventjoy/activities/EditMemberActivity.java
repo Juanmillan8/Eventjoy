@@ -63,7 +63,6 @@ import java.util.Calendar;
 import java.util.Map;
 
 public class EditMemberActivity extends AppCompatActivity {
-
     private Bundle getMember;
     private Member memberEdit;
     private TextInputEditText textInputEditTextName, textInputEditTextSurname, textInputEditTextUsername, textInputEditTextDni, textInputEditTextPhone, textInputEditTextBirthdate, textInputEditTextEmail;
@@ -78,7 +77,7 @@ public class EditMemberActivity extends AppCompatActivity {
     private DateTimeFormatter inputFormatter, outputFormatter;
     private static final int PICK_IMAGE_REQUEST = 0;
     private Uri mImageUri;
-    private Boolean changedImage;
+    private Boolean changedImage, defaultImage;
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
     private ActivityResultLauncher<Intent> cameraLauncher;
     private FirebaseUser user;
@@ -129,6 +128,7 @@ public class EditMemberActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 changedImage = false;
+                defaultImage = false;
                 profileIcon.setImageResource(R.drawable.default_profile_photo);
             }
         });
@@ -151,6 +151,7 @@ public class EditMemberActivity extends AppCompatActivity {
                 if (mImageUri != null) {
                     Picasso.get().load(mImageUri).into(profileIcon);
                     changedImage = true;
+                    defaultImage = false;
                 } else {
                     Toast.makeText(this, "Error getting image", Toast.LENGTH_SHORT).show();
                 }
@@ -221,6 +222,7 @@ public class EditMemberActivity extends AppCompatActivity {
                     mImageUri = data.getData();
                     profileIcon.setImageURI(mImageUri);
                     changedImage = true;
+                    defaultImage = false;
                 }
             }
         }
@@ -329,7 +331,6 @@ public class EditMemberActivity extends AppCompatActivity {
 
                 @Override
                 public void onSuccess(String requestId, Map resultData) {
-                    Log.i("1", "1");
                     String imageUrl = resultData.get("secure_url").toString();
                     memberEdit.setPhoto(imageUrl);
                     editMember();
@@ -346,8 +347,14 @@ public class EditMemberActivity extends AppCompatActivity {
                 }
             });
         } else {
-            memberEdit.setPhoto(null);
-            editMember();
+            if(defaultImage){
+                editMember();
+            }else{
+                memberEdit.setPhoto(null);
+                editMember();
+            }
+
+
         }
     }
 
@@ -412,6 +419,7 @@ public class EditMemberActivity extends AppCompatActivity {
     private void loadComponents() {
         user = FirebaseAuth.getInstance().getCurrentUser();
         changedImage = false;
+        defaultImage = false;
         inputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         btnSaveChanges = findViewById(R.id.btnSaveChanges);
@@ -448,7 +456,7 @@ public class EditMemberActivity extends AppCompatActivity {
         textInputEditTextEmail.setText(sharedPreferences.getString("email", ""));
         if (memberEdit.getPhoto() != null && !memberEdit.getPhoto().isEmpty()) {
             Picasso.get().load(memberEdit.getPhoto()).into(profileIcon);
-            changedImage = true;
+            defaultImage = true;
         }
 
         if (memberEdit.getProvider().equals(Provider.GOOGLE)) {

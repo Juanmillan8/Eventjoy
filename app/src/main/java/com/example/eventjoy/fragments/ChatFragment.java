@@ -43,7 +43,7 @@ import java.util.List;
 
 
 public class ChatFragment extends Fragment {
-
+    //TODO VER SI PUEDO HACER QUE EL LISTVIEW APAREZCA DEBAJO DEL TODO, PARA QUE EL SCROLL NO ESTE AL PRINCIPIO CUANDO HAYA MUCHOS MENSAJES, YA QUE PARA VER LOS ULTIMOS QUE SE MANDARON TENDRE QUE SCROLLEAR MUCHO HACIA ABAJO
     private View rootView;
     private ListView lvMessages;
     private MessageService messageService;

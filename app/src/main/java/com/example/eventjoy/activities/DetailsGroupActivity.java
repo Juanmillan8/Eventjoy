@@ -57,7 +57,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class DetailsGroupActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
-
+    //TODO ELIMINAR LO DEL ICONO DE NOTIFICACIONES
     private Bundle getData;
     private Group group;
     private String userGroupRole;
@@ -108,7 +108,7 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
                 startActivity(listMembersIntent);
             }
         });
-
+        //TODO ELIMINAR LOS EVENTS Y USEREVENTS QUE TODAVIA NO HAYAN COMENZADO, PROBAR SI EL METODO ONGOING EVENTS FUNCIONA
         linearLayoutDeleteGroup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -184,7 +184,6 @@ public class DetailsGroupActivity extends AppCompatActivity implements SearchVie
                                     }
                                 }
                             } else {
-                                Log.i("NOADMIN", "NOADMIN");
                                 leaveGroup();
                             }
                         }

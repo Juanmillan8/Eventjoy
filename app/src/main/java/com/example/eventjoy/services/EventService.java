@@ -138,7 +138,6 @@ public class EventService {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
-                    //hacer esto en otro metodo
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         Event event = snapshot.getValue(Event.class);
                         DateTimeFormatter formatterDateTime = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -271,7 +270,7 @@ public class EventService {
                     return;
                 }
 
-
+                    //TODO ASEGURARME DE QUE SE REALIZA BIEN LA COMPROBACION
                     databaseReferenceEvent.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {

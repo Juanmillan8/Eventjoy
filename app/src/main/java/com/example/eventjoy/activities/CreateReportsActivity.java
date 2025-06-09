@@ -60,12 +60,16 @@ public class CreateReportsActivity extends AppCompatActivity {
         btnCreateReport.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                createReport();
+                if(autoCompleteReportReason.getText().toString().isBlank()){
+                    Toast.makeText(getApplicationContext(), "You must fill out all the required fields", Toast.LENGTH_LONG).show();
+                }else{
+                    createReport();
+                }
             }
         });
 
     }
-    //TODO solo tengo que obtener el objeto grupo, añadirle la id del grupo al reporte y crearlo, luego haber si funciona
+
     private void createReport(){
         Report report = new Report();
         report.setReportDescription(textInputEditTextDescription.getText().toString());

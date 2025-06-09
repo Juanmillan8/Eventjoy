@@ -41,7 +41,7 @@ public class DiceRollerActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        //TODO AL FINALIZAR TODO, SEGUIR CON EL TIRADOR DE DADOS
+
         loadComponents();
 
         ibAddDice.setOnClickListener(new View.OnClickListener() {

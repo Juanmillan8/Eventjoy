@@ -55,7 +55,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EventDetailsActivity extends AppCompatActivity {
-
+    //TODO MEJORA: PONER QUE CADA VEZ QUE EL USUARIO PULSE EL BOTON DE UNIRSE O DE CANCELAR INSCRIPCION COMPRUEBE DE NUEVO LA FECHA
     private Toolbar toolbarActivity;
     private Event event;
     private String role, idCurrentUser;
@@ -116,6 +116,7 @@ public class EventDetailsActivity extends AppCompatActivity {
                 if (isOngoingEvent()) {
                     Toast.makeText(getApplicationContext(), "You cannot delete an event that is in progress", Toast.LENGTH_SHORT).show();
                 } else {
+                    //TODO SI TODAVIA NO HA COMENZADO, ELIMINAR EL USEREVENT Y EL EVENTO ENTERO
                     event.setGroupId(null);
                     eventService.updateEvent(event);
                     Toast.makeText(getApplicationContext(), "Event successfully deleted", Toast.LENGTH_SHORT).show();
@@ -153,7 +154,6 @@ public class EventDetailsActivity extends AppCompatActivity {
                     eventService.checkOverlapingEvents(idCurrentUser, event, new SimpleCallbackOnError() {
                         @Override
                         public void onError(String errorMessage) {
-                            Log.i("NUM " + numParticipants.toString(), "EVENT " + event.getMaxParticipants());
                             if (errorMessage != null) {
                                 Toast.makeText(getApplicationContext(), errorMessage, Toast.LENGTH_SHORT).show();
                             } else {
@@ -315,7 +315,6 @@ public class EventDetailsActivity extends AppCompatActivity {
         startDateTimeEvent = startDateTime;
         endDateTimeEvent = endDateTime;
 
-        Log.i("star " + startDateTimeEvent.toString(), "end " + endDateTimeEvent.toString());
 
         tvTitle.setText(event.getTitle());
 
@@ -350,6 +349,7 @@ public class EventDetailsActivity extends AppCompatActivity {
 
         tvUbication.setText("Street: " + event.getAddress().getStreet() + ", nº of the street: " + event.getAddress().getNumberStreet() + ", floor: " + event.getAddress().getFloor() + ", door: " + event.getAddress().getDoor() + ", postal code: " + event.getAddress().getPostalCode() + ", city: " + event.getAddress().getCity() + ", municipality: " + event.getAddress().getMunicipality() + ", province: " + event.getAddress().getProvince());
 
+        //TODO VER QUE FORMATO TIENE TODAY
         LocalDateTime today = LocalDateTime.now();
 
         if (role != null) {

@@ -25,6 +25,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Eventjoy">
         <activity
+            android:name=".activities.AdminMainActivity"
+            android:exported="false"
+            android:label="@string/title_activity_admin"
+            android:theme="@style/Theme.Eventjoy.NoActionBar" />
+        <activity
             android:name=".activities.CreateReportsActivity"
             android:exported="false" />
         <activity

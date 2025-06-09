@@ -17,6 +17,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,7 +59,7 @@ public class GroupService {
 
     public void deleteGroup(Group group) {
         databaseReferenceGroups.child(group.getId()).removeValue();
-        Log.i("SE ELIMINA PRIMERO", "SE ELIMINA PRIMERO");
+
         databaseReferenceUserGroups.orderByChild("groupId").equalTo(group.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -78,7 +80,6 @@ public class GroupService {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()){
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                        Log.i("FORMESSAGES", "FORMESSAGES");
                         snapshot.getRef().removeValue();
                     }
                 }
@@ -125,8 +126,10 @@ public class GroupService {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()){
+                    List<Event> scheduledEvents = new ArrayList<>();
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         Event event = snapshot.getValue(Event.class);
+                        //TODO MODIFICAR ESTE METODO PARA ELIMINAR LOS EVENTOS Y USER EVENTS QUE TODAVIA NO HAYAN COMENZADO
                         event.setGroupId(null);
                         databaseReferenceEvent.child(event.getId()).setValue(event);
                     }
