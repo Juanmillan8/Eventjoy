@@ -1,6 +1,7 @@
 package com.example.eventjoy.services;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -80,6 +81,7 @@ public class MemberService {
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e("Error - MemberService - getMembersNotInGroup", error.getMessage());
                         callback.onFailure(error.toException());
                     }
                 };
@@ -88,6 +90,7 @@ public class MemberService {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Error - MemberService - getMembersNotInGroup", error.getMessage());
                 callback.onFailure(error.toException());
             }
         };

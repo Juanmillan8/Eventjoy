@@ -85,7 +85,7 @@ public class ListMembersActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(getApplicationContext(), "Error querying database " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Error querying database", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -117,7 +117,7 @@ public class ListMembersActivity extends AppCompatActivity {
 
                 @Override
                 public void onCancelled(String onCancelledMessage) {
-                    Toast.makeText(getApplicationContext(), onCancelledMessage, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Error querying database", Toast.LENGTH_SHORT).show();
                 }
             });
         });

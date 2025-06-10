@@ -127,12 +127,6 @@ public class PopupJoinGroup extends AppCompatActivity {
         group = (Group) getData.getSerializable("group");
         invitation = (Invitation) getData.getSerializable("invitation");
 
-        if(invitation==null){
-            Log.i("ESNULO", "ESNULO");
-        }else{
-            Log.i("NOESNULO", "NOESNULO");
-        }
-
         if (group.getIcon() != null && !group.getIcon().isEmpty()) {
             Picasso.get().load(group.getIcon()).into(iconGroup);
         }

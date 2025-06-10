@@ -66,7 +66,7 @@ public class HomeAdminFragment extends Fragment {
 
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(getContext(), "Error querying database " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Error querying database", Toast.LENGTH_SHORT).show();
             }
         });
     }

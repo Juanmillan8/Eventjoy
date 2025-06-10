@@ -63,6 +63,7 @@ public class InvitationService {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Error - InvitationService - getInvitations", error.getMessage());
                 callback.onFailure(error.toException());
             }
         };
@@ -89,7 +90,7 @@ public class InvitationService {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("Error - UserEventService - checkMemberIsParticipant", error.getMessage());
+                Log.e("Error - InvitationService - hasAlreadyInvited", error.getMessage());
                 callback.onCancelled("Error querying the database: " + error.getMessage());
             }
         });

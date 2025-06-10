@@ -70,7 +70,7 @@ public class UserGroupService {
                 if(userGroup.getAdmin()){
                     userGroup.setAdmin(false);
                     databaseReferenceUserGroups.child(userGroup.getId()).setValue(userGroup);
-                    callback.onSuccess("You have successfully removed this user’s administrator privileges");
+                    callback.onSuccess("Admin rights removed successfully");
                 }else{
                     userGroup.setAdmin(true);
                     databaseReferenceUserGroups.child(userGroup.getId()).setValue(userGroup);
@@ -135,7 +135,7 @@ public class UserGroupService {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("Error - TimetableService - checkOverlapingTimetables", error.getMessage());
+                Log.e("Error - UserGroupService - checkUserGroupRole", error.getMessage());
                 callback.onCancelled("Error querying the database: " + error.getMessage());
             }
         });
@@ -176,6 +176,7 @@ public class UserGroupService {
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e("Error - UserGroupService - getMembersByGroupId", error.getMessage());
                         callback.onFailure(error.toException());
                     }
                 };
@@ -184,6 +185,7 @@ public class UserGroupService {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Error - UserGroupService - getMembersByGroupId", error.getMessage());
                 callback.onFailure(error.toException());
             }
         };
@@ -226,6 +228,7 @@ public class UserGroupService {
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e("Error - UserGroupService - getOtherGroups", error.getMessage());
                         callback.onFailure(error.toException());
                     }
                 };
@@ -234,6 +237,7 @@ public class UserGroupService {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Error - UserGroupService - getOtherGroups", error.getMessage());
                 callback.onFailure(error.toException());
             }
         };
@@ -281,6 +285,7 @@ public class UserGroupService {
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e("Error - UserGroupService - getAllGroups", error.getMessage());
                         callback.onFailure(error.toException());
                     }
                 };
@@ -289,6 +294,7 @@ public class UserGroupService {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Error - UserGroupService - getAllGroups", error.getMessage());
                 callback.onFailure(error.toException());
             }
         };
@@ -334,6 +340,7 @@ public class UserGroupService {
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e("Error - UserGroupService - getByMemberId", error.getMessage());
                         callback.onFailure(error.toException());
                     }
                 };
@@ -342,6 +349,7 @@ public class UserGroupService {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Error - UserGroupService - getByMemberId", error.getMessage());
                 callback.onFailure(error.toException());
             }
         };

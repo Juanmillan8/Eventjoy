@@ -7,6 +7,7 @@ import com.example.eventjoy.models.Event;
 import com.example.eventjoy.models.Group;
 import com.example.eventjoy.models.Member;
 import com.example.eventjoy.models.Report;
+import com.example.eventjoy.models.UserEvent;
 import com.example.eventjoy.models.UserGroup;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -18,6 +19,8 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +33,7 @@ public class GroupService {
     private DatabaseReference databaseReferenceInvitation;
     private DatabaseReference databaseReferenceReport;
     private DatabaseReference databaseReferenceEvent;
+    private DatabaseReference databaseReferenceUserEvents;
 
     public GroupService(Context context) {
         databaseReferenceGroups = FirebaseDatabase.getInstance().getReference().child("groups");
@@ -38,6 +42,7 @@ public class GroupService {
         databaseReferenceInvitation = FirebaseDatabase.getInstance().getReference().child("invitations");
         databaseReferenceReport = FirebaseDatabase.getInstance().getReference().child("reports");
         databaseReferenceEvent = FirebaseDatabase.getInstance().getReference().child("events");
+        databaseReferenceUserEvents = FirebaseDatabase.getInstance().getReference().child("userEvents");
     }
 
     public String insertGroup(Group g) {
@@ -129,10 +134,37 @@ public class GroupService {
                     List<Event> scheduledEvents = new ArrayList<>();
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         Event event = snapshot.getValue(Event.class);
-                        //TODO MODIFICAR ESTE METODO PARA ELIMINAR LOS EVENTOS Y USER EVENTS QUE TODAVIA NO HAYAN COMENZADO
-                        event.setGroupId(null);
-                        databaseReferenceEvent.child(event.getId()).setValue(event);
+                        ZonedDateTime startDateTime = ZonedDateTime.parse(event.getStartDateAndTime(), DateTimeFormatter.ISO_DATE_TIME);
+                        ZonedDateTime today = ZonedDateTime.now(ZoneOffset.UTC);
+
+                        if(startDateTime.isAfter(today)){
+                            scheduledEvents.add(event);
+                        }else{
+                            event.setGroupId(null);
+                            databaseReferenceEvent.child(event.getId()).setValue(event);
+                        }
                     }
+
+                    for (Event event : scheduledEvents) {
+                        databaseReferenceUserEvents.orderByChild("eventId").equalTo(event.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                databaseReferenceEvent.child(event.getId()).removeValue();
+                                if(snapshot.exists()){
+                                    for (DataSnapshot snapshotEvents : snapshot.getChildren()) {
+                                        UserEvent userEvent = snapshotEvents.getValue(UserEvent.class);
+                                        databaseReferenceUserEvents.child(userEvent.getId()).removeValue();
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+                                Log.e("Error - GroupService - deleteGroup", error.getMessage());
+                            }
+                        });
+                    }
+
                 }
             }
             @Override

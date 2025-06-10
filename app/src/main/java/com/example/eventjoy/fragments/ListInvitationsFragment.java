@@ -75,7 +75,8 @@ public class ListInvitationsFragment extends Fragment {
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
-                    Toast.makeText(getContext(), "Error querying database " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                    Log.e("Error - ListInvitationsFragment - getGroupById", databaseError.getMessage());
+                    Toast.makeText(getContext(), "Error querying database", Toast.LENGTH_SHORT).show();
                 }
             });
         });
@@ -102,7 +103,7 @@ public class ListInvitationsFragment extends Fragment {
 
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(getContext(), "Error querying database " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Error querying database", Toast.LENGTH_SHORT).show();
             }
         });
     }

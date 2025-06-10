@@ -111,7 +111,7 @@ public class PopupMemberOptionsActivity extends AppCompatActivity {
 
                     @Override
                     public void onCancelled(String errorMessage) {
-                        Toast.makeText(getApplicationContext(), errorMessage, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "Error querying database", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -137,7 +137,7 @@ public class PopupMemberOptionsActivity extends AppCompatActivity {
 
                                 @Override
                                 public void onCancelled(String onCancelledMessage) {
-                                    Toast.makeText(getApplicationContext(), onCancelledMessage, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getApplicationContext(), "Error querying database", Toast.LENGTH_SHORT).show();
                                 }
                             });
                         }
@@ -146,7 +146,7 @@ public class PopupMemberOptionsActivity extends AppCompatActivity {
 
                     @Override
                     public void onCancelled(String onCancelledMessage) {
-                        Toast.makeText(getApplicationContext(), onCancelledMessage, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "Error querying database", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -185,7 +185,7 @@ public class PopupMemberOptionsActivity extends AppCompatActivity {
 
                     @Override
                     public void onCancelled(String onCancelledMessage) {
-                        Toast.makeText(getApplicationContext(), onCancelledMessage, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "Error querying database", Toast.LENGTH_SHORT).show();
                     }
                 });
 

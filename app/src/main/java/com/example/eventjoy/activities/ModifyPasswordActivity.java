@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -62,12 +63,12 @@ public class ModifyPasswordActivity extends AppCompatActivity {
     private void changePassword() {
 
         if (textInputEditTextCurrentPassword.getText().toString().isBlank()) {
-            Toast.makeText(this, "To change your password you must first enter your current password", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Enter your current password to change it", Toast.LENGTH_SHORT).show();
         } else if (!textInputEditTextCurrentPassword.getText().toString().isBlank() && (textInputEditTextNewPassword.getText().toString().isBlank() || textInputEditTextConfirmNewPassword.getText().toString().isBlank())) {
-            Toast.makeText(this, "If you want to change your password you must enter a new password and confirm it", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Enter and confirm a new password to change it", Toast.LENGTH_SHORT).show();
         } else {
             if (!textInputEditTextNewPassword.getText().toString().equals(textInputEditTextConfirmNewPassword.getText().toString())) {
-                Toast.makeText(this, "The new password does not match the new password confirmation", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "New password and confirmation don't match", Toast.LENGTH_SHORT).show();
             } else {
                 AuthCredential credential = EmailAuthProvider.getCredential(sharedPreferences.getString("email", ""), textInputEditTextCurrentPassword.getText().toString());
                 user.reauthenticate(credential).addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -89,7 +90,8 @@ public class ModifyPasswordActivity extends AppCompatActivity {
                                     if (e instanceof FirebaseAuthInvalidCredentialsException) {
                                         Toast.makeText(getApplicationContext(), "The new password is not secure", Toast.LENGTH_SHORT).show();
                                     } else {
-                                        Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                        Log.e("Error - ModifyPasswordActivity - updatePassword", e.getMessage());
+                                        Toast.makeText(getApplicationContext(), "Unexpected error", Toast.LENGTH_SHORT).show();
                                     }
                                 }
                             });
@@ -109,10 +111,12 @@ public class ModifyPasswordActivity extends AppCompatActivity {
                                     Toast.makeText(getApplicationContext(), "The user is disabled", Toast.LENGTH_SHORT).show();
                                     break;
                                 default:
-                                    Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    Log.e("Error - ModifyPasswordActivity - reauthenticate", e.getMessage());
+                                    Toast.makeText(getApplicationContext(), "Unexpected error", Toast.LENGTH_SHORT).show();
                             }
                         } else {
-                            Toast.makeText(getApplicationContext(), "Unexpected error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            Log.e("Error - ModifyPasswordActivity - reauthenticate", e.getMessage());
+                            Toast.makeText(getApplicationContext(), "Unexpected error", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });

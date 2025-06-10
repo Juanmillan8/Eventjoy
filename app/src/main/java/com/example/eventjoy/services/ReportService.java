@@ -1,6 +1,7 @@
 package com.example.eventjoy.services;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -63,6 +64,7 @@ public class ReportService {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Error - ReportService - getPendingReports", error.getMessage());
                 callback.onFailure(error.toException());
             }
         };
@@ -91,6 +93,7 @@ public class ReportService {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Error - ReportService - getByUserId", error.getMessage());
                 callback.onFailure(error.toException());
             }
         };

@@ -43,6 +43,9 @@ import com.example.eventjoy.models.UserEvent;
 import com.example.eventjoy.services.EventService;
 import com.example.eventjoy.services.MemberService;
 import com.example.eventjoy.services.UserEventService;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -55,7 +58,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EventDetailsActivity extends AppCompatActivity {
-    //TODO MEJORA: PONER QUE CADA VEZ QUE EL USUARIO PULSE EL BOTON DE UNIRSE O DE CANCELAR INSCRIPCION COMPRUEBE DE NUEVO LA FECHA
     private Toolbar toolbarActivity;
     private Event event;
     private String role, idCurrentUser;
@@ -94,10 +96,10 @@ public class EventDetailsActivity extends AppCompatActivity {
         btnEditEvent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String formattedToday = LocalDateTime.now().format(formatterDateTime);
-                LocalDateTime today = LocalDateTime.parse(formattedToday, formatterDateTime);
+                ZonedDateTime startDateTime = ZonedDateTime.parse(event.getStartDateAndTime(), DateTimeFormatter.ISO_DATE_TIME);
+                ZonedDateTime today = ZonedDateTime.now(ZoneOffset.UTC);
 
-                if (today.isBefore(startDateTimeEvent)) {
+                if (today.isBefore(startDateTime)) {
                     Intent editEventIntent = new Intent(getApplicationContext(), EditEventActivity.class);
                     editEventIntent.putExtra("event", event);
                     editEventIntent.putExtra("isParticipant", isParticipant);
@@ -113,14 +115,40 @@ public class EventDetailsActivity extends AppCompatActivity {
         btnDeleteEvent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isOngoingEvent()) {
+                ZonedDateTime startDateTime = ZonedDateTime.parse(event.getStartDateAndTime(), DateTimeFormatter.ISO_DATE_TIME);
+                ZonedDateTime endDateTime = ZonedDateTime.parse(event.getEndDateAndTime(), DateTimeFormatter.ISO_DATE_TIME);
+                ZonedDateTime today = ZonedDateTime.now(ZoneOffset.UTC);
+
+                if (endDateTime.isAfter(today) && (startDateTime.isBefore(today) || startDateTime.equals(today))) {
                     Toast.makeText(getApplicationContext(), "You cannot delete an event that is in progress", Toast.LENGTH_SHORT).show();
                 } else {
-                    //TODO SI TODAVIA NO HA COMENZADO, ELIMINAR EL USEREVENT Y EL EVENTO ENTERO
-                    event.setGroupId(null);
-                    eventService.updateEvent(event);
-                    Toast.makeText(getApplicationContext(), "Event successfully deleted", Toast.LENGTH_SHORT).show();
-                    finish();
+                    if (startDateTime.isAfter(today)) {
+                        userEventService.getByEventId(event.getId(), false, new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                eventService.deleteEvent(event);
+                                if(dataSnapshot.exists()){
+                                    for (DataSnapshot snapshotEvents : dataSnapshot.getChildren()) {
+                                        UserEvent userEvent = snapshotEvents.getValue(UserEvent.class);
+                                        userEventService.deleteUserEvent(userEvent);
+                                    }
+                                }
+                                Toast.makeText(getApplicationContext(), "Event successfully deleted", Toast.LENGTH_SHORT).show();
+                                finish();
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Log.e("Error - EventDetailsActivity - getByEventId", databaseError.getMessage());
+                                Toast.makeText(getApplicationContext(), "Error querying database", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } else {
+                        event.setGroupId(null);
+                        eventService.updateEvent(event);
+                        Toast.makeText(getApplicationContext(), "Event successfully deleted", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
                 }
             }
         });
@@ -128,21 +156,29 @@ public class EventDetailsActivity extends AppCompatActivity {
         btnLeaveTheEvent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                userEventService.leaveEvent(event.getId(), idCurrentUser, new SimpleCallback() {
-                    @Override
-                    public void onSuccess(String message) {
-                        if (message != null) {
-                            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
-                            btnJoinTheEvent.setVisibility(View.VISIBLE);
-                            btnLeaveTheEvent.setVisibility(View.GONE);
-                        }
-                    }
+                ZonedDateTime startDateTime = ZonedDateTime.parse(event.getStartDateAndTime(), DateTimeFormatter.ISO_DATE_TIME);
+                ZonedDateTime today = ZonedDateTime.now(ZoneOffset.UTC);
 
-                    @Override
-                    public void onCancelled(String onCancelledMessage) {
-                        Toast.makeText(getApplicationContext(), onCancelledMessage, Toast.LENGTH_SHORT).show();
-                    }
-                });
+                if (startDateTime.isAfter(today)) {
+                    userEventService.leaveEvent(event.getId(), idCurrentUser, new SimpleCallback() {
+                        @Override
+                        public void onSuccess(String message) {
+                            if (message != null) {
+                                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+                                btnJoinTheEvent.setVisibility(View.VISIBLE);
+                                btnLeaveTheEvent.setVisibility(View.GONE);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(String onCancelledMessage) {
+                            Toast.makeText(getApplicationContext(), "Error querying database", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }else{
+                    Toast.makeText(getApplicationContext(), "You can only exit unstarted events", Toast.LENGTH_SHORT).show();
+                }
+
             }
         });
 
@@ -150,7 +186,7 @@ public class EventDetailsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                if(numParticipants<event.getMaxParticipants()){
+                if (numParticipants < event.getMaxParticipants()) {
                     eventService.checkOverlapingEvents(idCurrentUser, event, new SimpleCallbackOnError() {
                         @Override
                         public void onError(String errorMessage) {
@@ -169,10 +205,10 @@ public class EventDetailsActivity extends AppCompatActivity {
 
                         @Override
                         public void onCancelled(String onCancelledMessage) {
-                            Toast.makeText(getApplicationContext(), onCancelledMessage, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "Error querying database", Toast.LENGTH_SHORT).show();
                         }
                     });
-                }else{
+                } else {
                     Toast.makeText(getApplicationContext(), "This event has no available places", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -183,16 +219,6 @@ public class EventDetailsActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_event_details, menu);
         return true;
-    }
-
-    private boolean isOngoingEvent() {
-        String formattedToday = LocalDateTime.now().format(formatterDateTime);
-        LocalDateTime today = LocalDateTime.parse(formattedToday, formatterDateTime);
-        if (endDateTimeEvent.isAfter(today) && (startDateTimeEvent.isBefore(today) || startDateTimeEvent.equals(today))) {
-            return true;
-        } else {
-            return false;
-        }
     }
 
     @Override
@@ -215,7 +241,7 @@ public class EventDetailsActivity extends AppCompatActivity {
             public void onSuccess(List<Member> members) {
                 memberAdapter = new MemberAdapter(getApplicationContext(), members, false);
                 lvMembers.setAdapter(memberAdapter);
-                numParticipants=members.size();
+                numParticipants = members.size();
                 tvMembersNumber.setText(members.size() + "/" + event.getMaxParticipants() + " participants");
                 if (members.size() == 0) {
                     lvMembers.getLayoutParams().height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100, getResources().getDisplayMetrics());
@@ -225,12 +251,13 @@ public class EventDetailsActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(getApplicationContext(), "Error querying database " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.e("Error - EventDetailsActivity - getByEventId", e.getMessage());
+                Toast.makeText(getApplicationContext(), "Error querying database", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void addReminder(){
+    private void addReminder() {
         Intent intent = new Intent(Intent.ACTION_EDIT);
         intent.setType("vnd.android.cursor.item/event");
 
@@ -263,16 +290,16 @@ public class EventDetailsActivity extends AppCompatActivity {
         if (item.getItemId() == R.id.dice_roller) {
             Intent diceRollerIntent = new Intent(getApplicationContext(), DiceRollerActivity.class);
             startActivity(diceRollerIntent);
-        }else if(item.getItemId() == R.id.add_recordatory){
+        } else if (item.getItemId() == R.id.add_recordatory) {
             LocalDateTime today = LocalDateTime.now();
-            if(startDateTimeEvent.isAfter(today)){
+            if (startDateTimeEvent.isAfter(today)) {
                 addReminder();
-            }else if((startDateTimeEvent.isBefore(today) || startDateTimeEvent.equals(today)) && endDateTimeEvent.isAfter(today)){
-                Toast.makeText(getApplicationContext(), "You cannot add a reminder for an event that has already been initialized", Toast.LENGTH_SHORT).show();
-            }else if (endDateTimeEvent.isBefore(today) || endDateTimeEvent.equals(today)){
+            } else if ((startDateTimeEvent.isBefore(today) || startDateTimeEvent.equals(today)) && endDateTimeEvent.isAfter(today)) {
+                Toast.makeText(getApplicationContext(), "Can't add a reminder to an event that's already started", Toast.LENGTH_SHORT).show();
+            } else if (endDateTimeEvent.isBefore(today) || endDateTimeEvent.equals(today)) {
                 Toast.makeText(getApplicationContext(), "You cannot add a reminder for an event that has already ended", Toast.LENGTH_SHORT).show();
             }
-        }else{
+        } else {
             finish();
         }
         return true;
@@ -318,16 +345,12 @@ public class EventDetailsActivity extends AppCompatActivity {
         tvTitle.setText(event.getTitle());
 
         if (event.getStatus().name().equals("FINISHED")) {
-            cardViewStatus.setCardBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.eventFinished));
-            tvStatus.setText("Finished");
-        } else if (event.getStatus().name().equals("ONGOING")) {
-            cardViewStatus.setCardBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.eventOngoing));
-            tvStatus.setText("Ongoing");
-        } else {
-            cardViewStatus.setCardBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.eventScheduled));
-            tvStatus.setText("Scheduled");
-        }
 
+        } else if (event.getStatus().name().equals("ONGOING")) {
+
+        } else {
+
+        }
 
 
         String startDateTimeString = startDateTime.format(formatterDateTime);
@@ -339,7 +362,7 @@ public class EventDetailsActivity extends AppCompatActivity {
 
         String[] partsDateTimeEnd = endDateTimeString.split(" ");
         String dateEnd = partsDateTimeEnd[0];
-        String timeEnd= partsDateTimeEnd[1];
+        String timeEnd = partsDateTimeEnd[1];
 
         tvDateEvent.setText(dateStart + " - " + dateEnd);
         tvEventTime.setText(timeStart + " - " + timeEnd);
@@ -348,11 +371,23 @@ public class EventDetailsActivity extends AppCompatActivity {
 
         tvUbication.setText("Street: " + event.getAddress().getStreet() + ", nº of the street: " + event.getAddress().getNumberStreet() + ", floor: " + event.getAddress().getFloor() + ", door: " + event.getAddress().getDoor() + ", postal code: " + event.getAddress().getPostalCode() + ", city: " + event.getAddress().getCity() + ", municipality: " + event.getAddress().getMunicipality() + ", province: " + event.getAddress().getProvince());
 
-        //TODO VER QUE FORMATO TIENE TODAY
-        LocalDateTime today = LocalDateTime.now();
+        ZonedDateTime startEvent = ZonedDateTime.parse(event.getStartDateAndTime(), DateTimeFormatter.ISO_DATE_TIME);
+        ZonedDateTime endEvent = ZonedDateTime.parse(event.getEndDateAndTime(), DateTimeFormatter.ISO_DATE_TIME);
+        ZonedDateTime today = ZonedDateTime.now(ZoneOffset.UTC);
+
+        if(startEvent.isAfter(today)){
+            cardViewStatus.setCardBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.eventScheduled));
+            tvStatus.setText("Scheduled");
+        }else if (endEvent.isAfter(today) && (startEvent.isBefore(today) || startDateTime.equals(today))) {
+            cardViewStatus.setCardBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.eventOngoing));
+            tvStatus.setText("Ongoing");
+        }else if (endEvent.isBefore(today) || endEvent.equals(today)){
+            cardViewStatus.setCardBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.eventFinished));
+            tvStatus.setText("Finished");
+        }
 
         if (role != null) {
-            if (startDateTimeEvent.isAfter(today)) {
+            if (startEvent.isAfter(today)) {
                 if (isParticipant) {
                     btnLeaveTheEvent.setVisibility(View.VISIBLE);
                 } else {
@@ -362,7 +397,7 @@ public class EventDetailsActivity extends AppCompatActivity {
                     btnDeleteEvent.setVisibility(View.VISIBLE);
                     btnEditEvent.setVisibility(View.VISIBLE);
                 }
-            } else if (endDateTimeEvent.isBefore(today) || endDateTimeEvent.equals(today)) {
+            } else if (endEvent.isBefore(today) || endEvent.equals(today)) {
                 if (role.equals("ADMIN")) {
                     btnDeleteEvent.setVisibility(View.VISIBLE);
                 }

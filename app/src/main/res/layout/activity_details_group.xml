@@ -42,13 +42,6 @@
                 android:layout_weight="1" />
 
             <ImageView
-                android:id="@+id/ivNotifications"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_gravity="center_vertical"
-                app:srcCompat="@drawable/notifications_icon" />
-
-            <ImageView
                 android:id="@+id/ivAddPerson"
                 android:layout_width="24dp"
                 android:layout_height="24dp"

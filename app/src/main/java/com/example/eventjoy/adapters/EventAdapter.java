@@ -29,6 +29,8 @@ import com.squareup.picasso.Picasso;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -85,15 +87,19 @@ public class EventAdapter extends ArrayAdapter<Event> {
         tvDateEvent.setText(dateStart + " - " + dateEnd);
         tvEventTime.setText(timeStart + " - " + timeEnd);
 
-            if(event.getStatus().name().equals("FINISHED")){
-            cardViewStatus.setCardBackgroundColor(ContextCompat.getColor(context, R.color.eventFinished));
-            tvStatus.setText("Finished");
-        }else if (event.getStatus().name().equals("ONGOING")){
-            cardViewStatus.setCardBackgroundColor(ContextCompat.getColor(context, R.color.eventOngoing));
-            tvStatus.setText("Ongoing");
-        }else{
+        ZonedDateTime startEvent = ZonedDateTime.parse(event.getStartDateAndTime(), DateTimeFormatter.ISO_DATE_TIME);
+        ZonedDateTime endEvent = ZonedDateTime.parse(event.getEndDateAndTime(), DateTimeFormatter.ISO_DATE_TIME);
+        ZonedDateTime today = ZonedDateTime.now(ZoneOffset.UTC);
+
+        if(startEvent.isAfter(today)){
             cardViewStatus.setCardBackgroundColor(ContextCompat.getColor(context, R.color.eventScheduled));
             tvStatus.setText("Scheduled");
+        }else if (endEvent.isAfter(today) && (startEvent.isBefore(today) || startDateTime.equals(today))) {
+            cardViewStatus.setCardBackgroundColor(ContextCompat.getColor(context, R.color.eventOngoing));
+            tvStatus.setText("Ongoing");
+        }else if (endEvent.isBefore(today) || endEvent.equals(today)){
+            cardViewStatus.setCardBackgroundColor(ContextCompat.getColor(context, R.color.eventFinished));
+            tvStatus.setText("Finished");
         }
 
         tvAddressEvent.setText("Street: " + event.getAddress().getStreet() + ", nº of the street: " + event.getAddress().getNumberStreet() + ", floor: " +

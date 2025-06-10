@@ -53,6 +53,11 @@ public class EventService {
         databaseReferenceUserEvent = FirebaseDatabase.getInstance().getReference().child("userEvents");
     }
 
+    public void deleteEvent(Event e) {
+        databaseReferenceEvent.child(e.getId()).removeValue();
+    }
+
+
     public void updateEvent(Event e) {
         databaseReferenceEvent.child(e.getId()).setValue(e);
     }
@@ -79,8 +84,6 @@ public class EventService {
                     callback.onSuccess("false");
                     return;
                 }
-
-                Log.i("ISREGISTERED", eventList.toString());
 
                 AtomicBoolean found = new AtomicBoolean(false);
                 AtomicInteger processedCount = new AtomicInteger(0);
@@ -109,6 +112,7 @@ public class EventService {
 
                             @Override
                             public void onCancelled(@NonNull DatabaseError error) {
+                                Log.e("Error - EventService - isUserRegisteredInOngoingEvent", error.getMessage());
                                 callback.onCancelled("Error querying database: " + error.getMessage());
                             }
                         });
@@ -140,21 +144,19 @@ public class EventService {
                 if (dataSnapshot.exists()) {
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         Event event = snapshot.getValue(Event.class);
-                        DateTimeFormatter formatterDateTime = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-                        LocalDateTime startDateTimeEvent = LocalDateTime.parse(event.getStartDateAndTime(), formatterDateTime);
-                        LocalDateTime endDateTimeEvent = LocalDateTime.parse(event.getEndDateAndTime(), formatterDateTime);
-                        String formattedToday = LocalDateTime.now().format(formatterDateTime);
-                        LocalDateTime today = LocalDateTime.parse(formattedToday, formatterDateTime);
+
+                        ZonedDateTime startDateTimeEvent = ZonedDateTime.parse(event.getStartDateAndTime(), DateTimeFormatter.ISO_DATE_TIME);
+                        ZonedDateTime endDateTimeEvent = ZonedDateTime.parse(event.getEndDateAndTime(), DateTimeFormatter.ISO_DATE_TIME);
+                        ZonedDateTime today = ZonedDateTime.now(ZoneOffset.UTC);
+
                         if (endDateTimeEvent.isAfter(today) && (startDateTimeEvent.isBefore(today) || startDateTimeEvent.equals(today))) {
                             callback.onSuccess("true");
                             return;
                         }
                     }
                     callback.onSuccess("false");
-                    return;
                 } else {
                     callback.onSuccess("false");
-                    return;
                 }
             }
 
@@ -211,6 +213,7 @@ public class EventService {
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e("Error - EventService - getByMemberId", error.getMessage());
                         callback.onFailure(error.toException());
                     }
                 };
@@ -220,6 +223,7 @@ public class EventService {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Error - EventService - getByMemberId", error.getMessage());
                 callback.onFailure(error.toException());
             }
         };
@@ -249,6 +253,7 @@ public class EventService {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Error - EventService - getByGroupId", error.getMessage());
                 callback.onFailure(error.toException());
             }
         };
@@ -270,7 +275,6 @@ public class EventService {
                     return;
                 }
 
-                    //TODO ASEGURARME DE QUE SE REALIZA BIEN LA COMPROBACION
                     databaseReferenceEvent.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -281,24 +285,24 @@ public class EventService {
                                     OffsetDateTime offsetDateTime;
 
                                     offsetDateTime = OffsetDateTime.parse(event.getStartDateAndTime());
-                                    LocalDateTime startAppointmentDB = offsetDateTime.toLocalDateTime();
+                                    LocalDateTime startEventDB = offsetDateTime.toLocalDateTime();
 
                                     offsetDateTime = OffsetDateTime.parse(event.getEndDateAndTime());
-                                    LocalDateTime endAppointmentDB = offsetDateTime.toLocalDateTime();
+                                    LocalDateTime endEventDB = offsetDateTime.toLocalDateTime();
 
                                     offsetDateTime = OffsetDateTime.parse(eventCheck.getStartDateAndTime());
-                                    LocalDateTime startAppointmentCheck = offsetDateTime.toLocalDateTime();
+                                    LocalDateTime startEventCheck = offsetDateTime.toLocalDateTime();
 
                                     offsetDateTime = OffsetDateTime.parse(eventCheck.getEndDateAndTime());
-                                    LocalDateTime endAppointmentCheck = offsetDateTime.toLocalDateTime();
+                                    LocalDateTime endEventCheck = offsetDateTime.toLocalDateTime();
 
 
-                                    if ((((startAppointmentCheck.isAfter(startAppointmentDB) || startAppointmentCheck.equals(startAppointmentDB)) &&
-                                            (startAppointmentCheck.isBefore(endAppointmentDB))) || ((endAppointmentCheck.isAfter(startAppointmentDB)) &&
-                                            (endAppointmentCheck.isBefore(endAppointmentDB) || endAppointmentCheck.equals(endAppointmentDB))) ||
-                                            ((startAppointmentCheck.isBefore(startAppointmentDB) ||
-                                                    startAppointmentCheck.equals(startAppointmentDB)) &&
-                                                    (endAppointmentCheck.isAfter(endAppointmentDB) || endAppointmentCheck.equals(endAppointmentDB)))) &&
+                                    if ((((startEventCheck.isAfter(startEventDB) || startEventCheck.equals(startEventDB)) &&
+                                            (startEventCheck.isBefore(endEventDB))) || ((endEventCheck.isAfter(startEventDB)) &&
+                                            (endEventCheck.isBefore(endEventDB) || endEventCheck.equals(endEventDB))) ||
+                                            ((startEventCheck.isBefore(startEventDB) ||
+                                                    startEventCheck.equals(startEventDB)) &&
+                                                    (endEventCheck.isAfter(endEventDB) || endEventCheck.equals(endEventDB)))) &&
                                             !event.getId().equals(eventCheck.getId())) {
                                         callback.onError("This event overlaps with another event you have registered for");
                                         return;
@@ -310,7 +314,6 @@ public class EventService {
 
                         @Override
                         public void onCancelled(@NonNull DatabaseError error) {
-                            //En caso de error en la consulta, lo registramos en el log y notificamos mediante el callback
                             Log.e("Error - EventService - checkOverlapingEvents", error.getMessage());
                             callback.onCancelled("Error querying the database " + error.getMessage());
                         }
@@ -319,7 +322,6 @@ public class EventService {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                //En caso de error en la consulta, lo registramos en el log y notificamos mediante el callback
                 Log.e("Error - EventService - checkOverlapingEvents", error.getMessage());
                 callback.onCancelled("Error querying the database " + error.getMessage());
             }

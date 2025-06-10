@@ -249,12 +249,13 @@ public class SignUpActivity extends AppCompatActivity {
         } else if (textInputEditTextName.getText().toString().length() > 20) {
             Toast.makeText(getApplicationContext(), "The name must have a maximum of 20 characters", Toast.LENGTH_LONG).show();
         } else {
-            //TODO Verificar formato de fecha
             LocalDate date = LocalDate.parse(textInputEditTextBirthdate.getText().toString(), inputFormatter);
             String formattedDate = date.format(outputFormatter);
 
             birthdate = LocalDate.parse(formattedDate);
             LocalDate today = LocalDate.now();
+
+            Log.i("birdate " + birthdate.toString(), "tudei " + today.toString());
 
             if (birthdate.isAfter(today)) {
                 Toast.makeText(getApplicationContext(), "Date of birth cannot be later than the current date", Toast.LENGTH_LONG).show();
@@ -267,14 +268,14 @@ public class SignUpActivity extends AppCompatActivity {
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.exists()) {
                             progressDialog.dismiss();
-                            Toast.makeText(getApplicationContext(), "The DNI " + textInputEditTextDni.getText().toString() + " is already registered, try a different one", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getApplicationContext(), "The DNI is already registered, try a different one", Toast.LENGTH_LONG).show();
                         } else {
                             memberService.checkRepeatedUsername(textInputEditTextUsername.getText().toString(), new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                                     if (snapshot.exists()) {
                                         progressDialog.dismiss();
-                                        Toast.makeText(getApplicationContext(), "The username " + textInputEditTextUsername.getText().toString() + " is already registered, try a different one", Toast.LENGTH_LONG).show();
+                                        Toast.makeText(getApplicationContext(), "The username is already registered, try a different one", Toast.LENGTH_LONG).show();
                                     } else {
                                         signUpMember();
                                     }
@@ -284,7 +285,7 @@ public class SignUpActivity extends AppCompatActivity {
                                 public void onCancelled(@NonNull DatabaseError error) {
                                     //Se cierra la ventana de carga
                                     progressDialog.dismiss();
-                                    Toast.makeText(getApplicationContext(), "Error querying database: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getApplicationContext(), "Error querying database", Toast.LENGTH_SHORT).show();
                                 }
                             });
                         }
@@ -294,6 +295,7 @@ public class SignUpActivity extends AppCompatActivity {
                     public void onCancelled(@NonNull DatabaseError error) {
                         //Se cierra la ventana de carga
                         progressDialog.dismiss();
+                        Log.e("Error - SignUpActivity - checkRepeatedDNI", error.getMessage());
                         Toast.makeText(getApplicationContext(), "Error querying database: " + error.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -332,22 +334,24 @@ public class SignUpActivity extends AppCompatActivity {
 
                         switch (errorCode) {
                             case "ERROR_WEAK_PASSWORD":
-                                Toast.makeText(getApplicationContext(), "The password is too weak, please choose a stronger password", Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(), "The password is too weak", Toast.LENGTH_LONG).show();
                                 break;
                             case "ERROR_INVALID_EMAIL":
-                                Toast.makeText(getApplicationContext(), "The email is in an invalid format, please enter a valid email", Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(), "The email is in an invalid format", Toast.LENGTH_LONG).show();
                                 break;
                             case "ERROR_EMAIL_ALREADY_IN_USE":
-                                Toast.makeText(getApplicationContext(), "The email " + textInputEditTextEmail.getText().toString() + " is already registered in another account", Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(), "The email is already registered in another account", Toast.LENGTH_LONG).show();
                                 break;
                             case "ERROR_NETWORK_REQUEST_FAILED":
-                                Toast.makeText(getApplicationContext(), "A network error (such as timeout, interrupted connection or unreachable host) has occurred.", Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(), "A network error has occurred.", Toast.LENGTH_LONG).show();
                                 break;
                             default:
-                                Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                Log.e("Error - SignUpActivity - createUserWithEmailAndPassword", e.getMessage());
+                                Toast.makeText(getApplicationContext(), "Unexpected error", Toast.LENGTH_SHORT).show();
                         }
                     } else {
-                        Toast.makeText(getApplicationContext(), "Failed registration: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        Log.e("Error - SignUpActivity - createUserWithEmailAndPassword", e.getMessage());
+                        Toast.makeText(getApplicationContext(), "Unexpected error", Toast.LENGTH_SHORT).show();
                     }
                 }
             });
@@ -564,13 +568,15 @@ public class SignUpActivity extends AppCompatActivity {
                             mImageUri = FileProvider.getUriForFile(SignUpActivity.this, getPackageName(), file);
                         } catch (IOException e) {
                             e.printStackTrace();
-                            Log.e("ImageSaveError", "No se pudo guardar imagen: " + e.getMessage());
+                            Log.e("ImageSaveError", "Could not save image: " + e.getMessage());
+                            Toast.makeText(getApplicationContext(), "Error loading image", Toast.LENGTH_SHORT).show();
                         }
                     }
 
                     @Override
                     public void onBitmapFailed(Exception e, Drawable errorDrawable) {
-                        Log.e("Picasso", "Error al cargar imagen: " + e.getMessage());
+                        Log.e("Picasso", "Error loading image: " + e.getMessage());
+                        Toast.makeText(getApplicationContext(), "Error loading image", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override

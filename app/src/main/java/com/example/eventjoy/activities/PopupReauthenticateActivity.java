@@ -4,6 +4,7 @@ import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -106,10 +107,12 @@ public class PopupReauthenticateActivity extends AppCompatActivity {
                         }else if(errorCode.equalsIgnoreCase("ERROR_USER_DISABLED")){
                             Toast.makeText(getApplicationContext(), "The user is disabled", Toast.LENGTH_SHORT).show();
                         }else{
-                            Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            Log.e("Error - PopupReauthenticateActivity - reauthenticate", e.getMessage());
+                            Toast.makeText(getApplicationContext(), "Unexpected error", Toast.LENGTH_SHORT).show();
                         }
                     } else {
-                        Toast.makeText(getApplicationContext(), "Unexpected error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Log.e("Error - PopupReauthenticateActivity - reauthenticate", e.getMessage());
+                        Toast.makeText(getApplicationContext(), "Unexpected error", Toast.LENGTH_SHORT).show();
                     }
 
                     //Cerrar sesión del usuario si falla al reautenticarse

@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 
 import com.example.eventjoy.callbacks.SimpleCallback;
 import com.example.eventjoy.enums.UserGroupRole;
+import com.example.eventjoy.models.Event;
 import com.example.eventjoy.models.Group;
 import com.example.eventjoy.models.UserEvent;
 import com.example.eventjoy.models.UserGroup;
@@ -23,6 +24,10 @@ public class UserEventService {
 
     public UserEventService(Context context) {
         databaseReferenceUserEvent = FirebaseDatabase.getInstance().getReference().child("userEvents");
+    }
+
+    public void deleteUserEvent(UserEvent u) {
+        databaseReferenceUserEvent.child(u.getId()).removeValue();
     }
 
     public void checkMemberIsParticipant(String eventId, String userId, SimpleCallback callback) {

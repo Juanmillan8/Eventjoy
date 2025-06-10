@@ -61,7 +61,14 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:layout_marginRight="10dp"
-                android:textSize="40sp" />
+                android:textSize="40sp"
+                android:minLines="1"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:autoSizeTextType="uniform"
+                android:autoSizeMinTextSize="12sp"
+                android:autoSizeMaxTextSize="40sp"
+                android:autoSizeStepGranularity="1sp" />
 
 
         </LinearLayout>

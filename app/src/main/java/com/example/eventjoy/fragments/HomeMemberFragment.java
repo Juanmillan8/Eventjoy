@@ -85,7 +85,7 @@ public class HomeMemberFragment extends Fragment implements SearchView.OnQueryTe
 
                 @Override
                 public void onCancelled(String onCancelledMessage){
-                    Toast.makeText(getContext(), onCancelledMessage, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Error querying database", Toast.LENGTH_SHORT).show();
                 }
             });
         });
@@ -156,7 +156,7 @@ public class HomeMemberFragment extends Fragment implements SearchView.OnQueryTe
 
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(getContext(), "Error querying database " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Error querying database", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -173,7 +173,7 @@ public class HomeMemberFragment extends Fragment implements SearchView.OnQueryTe
 
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(getContext(), "Error querying database " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Error querying database", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -190,7 +190,7 @@ public class HomeMemberFragment extends Fragment implements SearchView.OnQueryTe
 
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(getContext(), "Error querying database " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Error querying database", Toast.LENGTH_SHORT).show();
             }
         });
     }

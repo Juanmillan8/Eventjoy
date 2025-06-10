@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class ListValorationsFragment extends Fragment {
-    //TODO PONER EL NOMBRE DE USUARIO PARA QUE SE AJUSTE AL CONTENEDOR
+
     private View rootView;
     private ListView lvValorations;
     private ValorationService valorationService;
@@ -122,7 +122,7 @@ public class ListValorationsFragment extends Fragment {
             }
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(getActivity().getApplication(), "Error querying database " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity().getApplication(), "Error querying database", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -154,7 +154,8 @@ public class ListValorationsFragment extends Fragment {
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
-                    Toast.makeText(getContext(), "Error querying database " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                    Log.e("Error - ListValorationsFragment - getMemberById", databaseError.getMessage());
+                    Toast.makeText(getContext(), "Error querying database", Toast.LENGTH_SHORT).show();
                 }
             });
         }

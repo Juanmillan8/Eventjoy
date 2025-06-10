@@ -93,7 +93,7 @@ public class EventsFragment extends Fragment {
 
                     @Override
                     public void onCancelled(String onCancelledMessage) {
-                        Toast.makeText(getContext(), onCancelledMessage, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Error querying database", Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -142,7 +142,7 @@ public class EventsFragment extends Fragment {
 
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(getContext(), "Error querying database " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Error querying database", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -172,7 +172,7 @@ public class EventsFragment extends Fragment {
 
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(getContext(), "Error querying database " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Error querying database", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -194,10 +194,6 @@ public class EventsFragment extends Fragment {
         if (role != null && role.equals("ADMIN")) {
             btnCreateEvent.setVisibility(View.VISIBLE);
         }
-
-        //TODO AL TRAER LOS EVENTOS COMPROBAR LA FECHA, DEPENDIENDO DE LA FECHA TENGO QUE MOSTRAR SCHEDULED, ONGOING O FINISH
-        //TODO EN EL EVENT DETAILS TAMBIEN MODIFICARLO, PARA QUE A LA HORA DE TRAERLO EL EVENTO MOSTRAR SHCEDULED, ONGOING O FINISH
-
     }
 
     private void loadServices() {

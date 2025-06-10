@@ -102,7 +102,7 @@ public class ListReportsFragment extends Fragment {
             }
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(getActivity().getApplication(), "Error querying database " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity().getApplication(), "Error querying database", Toast.LENGTH_SHORT).show();
             }
         });
     }

@@ -271,14 +271,14 @@ public class EditMemberActivity extends AppCompatActivity {
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (!textInputEditTextDni.getText().toString().equals(memberEdit.getDni().toString()) && snapshot.exists()) {
                             progressDialog.dismiss();
-                            Toast.makeText(getApplicationContext(), "The DNI " + textInputEditTextDni.getText().toString() + " is already registered, try a different one", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getApplicationContext(), "DNI already registered, try another", Toast.LENGTH_LONG).show();
                         } else {
                             memberService.checkRepeatedUsername(textInputEditTextUsername.getText().toString(), new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                                     if (!textInputEditTextUsername.getText().toString().equals(memberEdit.getUsername().toString()) && snapshot.exists()) {
                                         progressDialog.dismiss();
-                                        Toast.makeText(getApplicationContext(), "The username " + textInputEditTextUsername.getText().toString() + " is already registered, try a different one", Toast.LENGTH_LONG).show();
+                                        Toast.makeText(getApplicationContext(), "Username already registered, try another", Toast.LENGTH_LONG).show();
                                     } else {
                                         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
                                             saveProfileImage();
@@ -294,7 +294,8 @@ public class EditMemberActivity extends AppCompatActivity {
                                 public void onCancelled(@NonNull DatabaseError error) {
                                     //Se cierra la ventana de carga
                                     progressDialog.dismiss();
-                                    Toast.makeText(getApplicationContext(), "Error querying database " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                    Log.e("Error - EditMemberActivity - checkRepeatedUsername", error.getMessage());
+                                    Toast.makeText(getApplicationContext(), "Error querying database", Toast.LENGTH_SHORT).show();
                                 }
                             });
                         }
@@ -305,7 +306,8 @@ public class EditMemberActivity extends AppCompatActivity {
                     public void onCancelled(@NonNull DatabaseError error) {
                         //Se cierra la ventana de carga
                         progressDialog.dismiss();
-                        Toast.makeText(getApplicationContext(), "Error querying database " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                        Log.e("Error - EditMemberActivity - checkRepeatedDNI", error.getMessage());
+                        Toast.makeText(getApplicationContext(), "Error querying database", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -339,7 +341,8 @@ public class EditMemberActivity extends AppCompatActivity {
                 @Override
                 public void onError(String requestId, ErrorInfo error) {
                     progressDialog.dismiss();
-                    Toast.makeText(getApplicationContext(), "Error saving profile picture: " + error.toString(), Toast.LENGTH_SHORT).show();
+                    Log.e("Error - EditMemberActivity - saveProfileImage", error.getDescription());
+                    Toast.makeText(getApplicationContext(), "Error saving profile picture", Toast.LENGTH_SHORT).show();
                 }
 
                 @Override
@@ -391,24 +394,26 @@ public class EditMemberActivity extends AppCompatActivity {
                             Toast.makeText(getApplicationContext(), "The user is disabled", Toast.LENGTH_SHORT).show();
                             break;
                         case "ERROR_REQUIRES_RECENT_LOGIN":
-                            Toast.makeText(getApplicationContext(), "HAY QUE REAUTENTICAR AL USUARIO", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "You need to reauthenticate to continue", Toast.LENGTH_SHORT).show();
                             Intent showPoPup = new Intent(getApplicationContext(), PopupReauthenticateActivity.class);
                             startActivity(showPoPup);
                             break;
                         case "ERROR_INVALID_EMAIL":
-                            Toast.makeText(getApplicationContext(), "The email is in an invalid format, please enter a valid email", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "The email is in an invalid format", Toast.LENGTH_SHORT).show();
                             break;
                         case "ERROR_EMAIL_ALREADY_IN_USE":
-                            Toast.makeText(getApplicationContext(), "The email " + textInputEditTextEmail.getText().toString() + " is already registered in another account", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "The email is already registered in another account", Toast.LENGTH_SHORT).show();
                             break;
                         case "ERROR_NETWORK_REQUEST_FAILED":
-                            Toast.makeText(getApplicationContext(), "A network error (such as timeout, interrupted connection or unreachable host) has occurred.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "A network error has occurred.", Toast.LENGTH_SHORT).show();
                             break;
                         default:
-                            Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            Log.e("Error - EditMemberActivity - updateEmail", e.getMessage());
+                            Toast.makeText(getApplicationContext(), "Unexpected error", Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    Toast.makeText(getApplicationContext(), "Failed registration: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Log.e("Error - EditMemberActivity - updateEmail", e.getMessage());
+                    Toast.makeText(getApplicationContext(), "Unexpected error", Toast.LENGTH_SHORT).show();
                 }
             }
         });

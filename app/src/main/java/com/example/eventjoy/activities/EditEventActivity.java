@@ -150,7 +150,7 @@ public class EditEventActivity extends AppCompatActivity {
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                         if(eventEdit.getMaxParticipants()<dataSnapshot.getChildrenCount()){
-                            Toast.makeText(getApplicationContext(), "The maximum number of participants cannot be set lower than the number of people already registered for the event", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "Max participants can't be below current attendees", Toast.LENGTH_SHORT).show();
                         }else{
 
                             ZonedDateTime endDateTimeEvent = eventStartDateTime.plusMinutes(
@@ -171,7 +171,8 @@ public class EditEventActivity extends AppCompatActivity {
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError databaseError) {
-                        Toast.makeText(getApplicationContext(), "Error querying database " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                        Log.e("Error - EditEventActivity - getByEventId", databaseError.getMessage());
+                        Toast.makeText(getApplicationContext(), "Error querying database", Toast.LENGTH_SHORT).show();
                     }
                 });
             }

@@ -43,7 +43,7 @@ import java.util.List;
 
 
 public class ChatFragment extends Fragment {
-    //TODO MEJORA: VER SI PUEDO HACER QUE EL LISTVIEW APAREZCA DEBAJO DEL TODO, PARA QUE EL SCROLL NO ESTE AL PRINCIPIO CUANDO HAYA MUCHOS MENSAJES, YA QUE PARA VER LOS ULTIMOS QUE SE MANDARON TENDRE QUE SCROLLEAR MUCHO HACIA ABAJO
+
     private View rootView;
     private ListView lvMessages;
     private MessageService messageService;
@@ -118,11 +118,13 @@ public class ChatFragment extends Fragment {
                 messageList = messages;
                 messageAdapter = new MessageAdapter(getContext(), messages);
                 lvMessages.setAdapter(messageAdapter);
+
+                lvMessages.post(() -> lvMessages.setSelection(messageAdapter.getCount() - 1));
             }
 
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(getContext(), "Error querying database " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Error querying database", Toast.LENGTH_SHORT).show();
             }
         });
     }

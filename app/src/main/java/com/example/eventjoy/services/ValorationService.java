@@ -1,6 +1,7 @@
 package com.example.eventjoy.services;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -56,6 +57,7 @@ public class ValorationService {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Error - ValorationService - getByRatedUserId", error.getMessage());
                 callback.onFailure(error.toException());
             }
         };

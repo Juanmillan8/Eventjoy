@@ -147,13 +147,15 @@ public class MainActivity extends AppCompatActivity {
                         } else if (e instanceof FirebaseNetworkException) {
                             Toast.makeText(getApplicationContext(), "Network error: Could not connect to database", Toast.LENGTH_LONG).show();
                         } else {
-                            Toast.makeText(getApplicationContext(), "Unexpected error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            Log.e("Error - MainActivity - getSignedInAccountFromIntent", e.getMessage());
+                            Toast.makeText(getApplicationContext(), "Unexpected error", Toast.LENGTH_LONG).show();
                         }
                     }
                 });
 
             } catch (Exception e) {
-                Log.e("MainActivity - Error", e.getMessage().toString());
+                Log.e("Error - MainActivity - getSignedInAccountFromIntent", e.getMessage());
+                Toast.makeText(getApplicationContext(), "Unexpected error", Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -207,7 +209,8 @@ public class MainActivity extends AppCompatActivity {
                         }
                         @Override
                         public void onCancelled(@NonNull DatabaseError error) {
-                            Toast.makeText(getApplicationContext(), "Error querying database " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                            Log.e("Error - MainActivity - getAdminByUid", error.getMessage());
+                            Toast.makeText(getApplicationContext(), "Error querying database", Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
@@ -215,7 +218,8 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(getApplicationContext(), "Error querying database " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.e("Error - MainActivity - getMemberByUid", error.getMessage());
+                Toast.makeText(getApplicationContext(), "Error querying database", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -244,11 +248,12 @@ public class MainActivity extends AppCompatActivity {
                         } else if (errorCode.equalsIgnoreCase("ERROR_USER_DISABLED")) {
                             Toast.makeText(getApplicationContext(),"The user is disabled", Toast.LENGTH_LONG).show();
                         } else {
-                            Toast.makeText(getApplicationContext(),"Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            Log.e("Error - MainActivity - signInWithEmailAndPassword", e.getMessage());
+                            Toast.makeText(getApplicationContext(),"Unexpected error", Toast.LENGTH_LONG).show();
                         }
                     } else {
-                        Log.i("ERROR", e.getMessage());
-                        Toast.makeText(getApplicationContext(),"Unexpected error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        Log.e("Error - MainActivity - signInWithEmailAndPassword", e.getMessage());
+                        Toast.makeText(getApplicationContext(),"Unexpected error", Toast.LENGTH_LONG).show();
                     }
                 }
             });

@@ -113,7 +113,8 @@ public class AdminMainActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(getApplicationContext(), "Error querying database " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.e("Error - AdminMainActivity - getAdminById", databaseError.getMessage());
+                Toast.makeText(getApplicationContext(), "Error querying database", Toast.LENGTH_SHORT).show();
             }
         });
     }
