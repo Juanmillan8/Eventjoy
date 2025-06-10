@@ -1,4 +1,4 @@
-package com.example.eventjoy;
+package com.example.eventjoy.tests;
 
 import android.content.Context;
 
@@ -22,5 +22,10 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         assertEquals("com.example.eventjoy", appContext.getPackageName());
+    }
+
+    @org.junit.jupiter.api.Test
+    public void test_siempre_pasa(){
+        assertTrue(5>1);
     }
 }

@@ -40,6 +40,12 @@ public class MemberService {
         databaseReferenceUserGroups = FirebaseDatabase.getInstance().getReference().child("userGroups");
     }
 
+    public MemberService() {
+        databaseReferenceMembers = FirebaseDatabase.getInstance().getReference().child("members");
+        databaseReferenceUserEvents = FirebaseDatabase.getInstance().getReference().child("userEvents");
+        databaseReferenceUserGroups = FirebaseDatabase.getInstance().getReference().child("userGroups");
+    }
+
     public String insertMember(Member m) {
         DatabaseReference newReference = databaseReferenceMembers.push();
         m.setId(newReference.getKey());
@@ -169,6 +175,10 @@ public class MemberService {
     public void checkRepeatedUsername(String patientUsername, ValueEventListener listener) {
         Query query = databaseReferenceMembers.orderByChild("username").equalTo(patientUsername);
         query.addListenerForSingleValueEvent(listener);
+    }
+
+    public void deleteMemberById(String id) {
+        databaseReferenceMembers.child(id).removeValue();
     }
 
     public void updateMember(Member m) {

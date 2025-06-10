@@ -186,11 +186,7 @@ public class EventService {
                     Log.i("VACIO", eventsId.toString());
                     callback.onSuccess(new ArrayList<>());
                     return;
-                }else{
-                    Log.i("LLENO", eventsId.toString());
                 }
-
-
 
 
                 if (eventsListener != null) {
