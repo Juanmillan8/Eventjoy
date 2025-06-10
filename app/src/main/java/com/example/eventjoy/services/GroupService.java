@@ -5,12 +5,9 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import com.example.eventjoy.models.Event;
 import com.example.eventjoy.models.Group;
-import com.example.eventjoy.models.Member;
 import com.example.eventjoy.models.Report;
 import com.example.eventjoy.models.UserEvent;
-import com.example.eventjoy.models.UserGroup;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.example.eventjoy.providers.FirebaseDatabaseProvider;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -18,7 +15,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -43,6 +39,17 @@ public class GroupService {
         databaseReferenceReport = FirebaseDatabase.getInstance().getReference().child("reports");
         databaseReferenceEvent = FirebaseDatabase.getInstance().getReference().child("events");
         databaseReferenceUserEvents = FirebaseDatabase.getInstance().getReference().child("userEvents");
+    }
+
+    public GroupService(FirebaseDatabase firebaseDatabase) {
+        databaseReferenceGroups = firebaseDatabase.getReference().child("groups");
+        databaseReferenceUserGroups = firebaseDatabase.getReference().child("userGroups");
+        databaseReferenceMessage = firebaseDatabase.getReference().child("messages");
+        databaseReferenceInvitation = firebaseDatabase.getReference().child("invitations");
+        databaseReferenceReport = firebaseDatabase.getReference().child("reports");
+        databaseReferenceEvent = firebaseDatabase.getReference().child("events");
+        databaseReferenceUserEvents = firebaseDatabase.getReference().child("userEvents");
+
     }
 
     public String insertGroup(Group g) {

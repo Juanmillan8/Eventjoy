@@ -26,6 +26,10 @@ public class MessageService {
         databaseReferenceMessages = FirebaseDatabase.getInstance().getReference().child("messages");
     }
 
+    public MessageService(FirebaseDatabase firebaseDatabase) {
+        databaseReferenceMessages = firebaseDatabase.getReference().child("messages");
+    }
+
     public String insertMessage(Message m) {
         DatabaseReference newReference = databaseReferenceMessages.push();
         m.setId(newReference.getKey());

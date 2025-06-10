@@ -46,6 +46,11 @@ public class UserGroupService {
         databaseReferenceGroups = FirebaseDatabase.getInstance().getReference().child("groups");
         databaseReferenceMembers = FirebaseDatabase.getInstance().getReference().child("members");
     }
+    public UserGroupService(FirebaseDatabase firebaseDatabase) {
+        databaseReferenceUserGroups = firebaseDatabase.getReference().child("userGroups");
+        databaseReferenceGroups = firebaseDatabase.getReference().child("groups");
+        databaseReferenceMembers = firebaseDatabase.getReference().child("members");
+    }
 
     public String insertUserGroup(UserGroup u) {
         DatabaseReference newReference = databaseReferenceUserGroups.push();
