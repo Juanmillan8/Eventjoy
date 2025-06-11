@@ -148,7 +148,6 @@ public class MemberMainActivity extends AppCompatActivity {
         tvName = navigationView.getHeaderView(0).findViewById(R.id.tvName);
         tvEmail = navigationView.getHeaderView(0).findViewById(R.id.tvEmail);
         profileIcon = navigationView.getHeaderView(0).findViewById(R.id.profileIcon);
-        Log.i("IDE", sharedPreferences.getString("id", ""));
         memberService.getMemberById(sharedPreferences.getString("id", ""), new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {

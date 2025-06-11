@@ -255,8 +255,6 @@ public class SignUpActivity extends AppCompatActivity {
             birthdate = LocalDate.parse(formattedDate);
             LocalDate today = LocalDate.now();
 
-            Log.i("birdate " + birthdate.toString(), "tudei " + today.toString());
-
             if (birthdate.isAfter(today)) {
                 Toast.makeText(getApplicationContext(), "Date of birth cannot be later than the current date", Toast.LENGTH_LONG).show();
             } else if (Period.between(birthdate, today).getYears() < 12) {

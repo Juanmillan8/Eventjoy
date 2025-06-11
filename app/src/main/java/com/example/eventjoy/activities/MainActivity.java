@@ -170,7 +170,6 @@ public class MainActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
                     Member m = snapshot.getChildren().iterator().next().getValue(Member.class);
-                    Log.i("INICIO", m.getId());
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putString("email", email);
                     editor.putString("role", Role.MEMBER.name());

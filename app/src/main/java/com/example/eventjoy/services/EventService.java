@@ -188,7 +188,6 @@ public class EventService {
                 }
 
                 if (eventsId.isEmpty()) {
-                    Log.i("VACIO", eventsId.toString());
                     callback.onSuccess(new ArrayList<>());
                     return;
                 }

@@ -123,7 +123,6 @@ public class CreateEventsActivity extends AppCompatActivity {
 
             ZonedDateTime today = ZonedDateTime.now(ZoneOffset.UTC);
             String formattedEventStartDateTime = formatter.format(eventStartDateTime);
-            Log.i("FECHA", eventStartDateTime.toString());
             if(eventStartDateTime.isBefore(today) || eventStartDateTime.equals(today)){
                 Toast.makeText(getApplicationContext(), "The date must be after to today's date", Toast.LENGTH_SHORT).show();
             }else if (Integer.parseInt(textInputEditTextDuration.getText().toString())<=15){

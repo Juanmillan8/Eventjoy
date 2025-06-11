@@ -144,7 +144,6 @@ public class HomeMemberFragment extends Fragment implements SearchView.OnQueryTe
     }
 
     private void startListeningMyGroups() {
-        Log.i("migroups", "migroups");
         userGroupService.stopListening();
         userGroupService.getByMemberId(idCurrentUser, new GroupsCallback() {
             @Override

@@ -299,13 +299,10 @@ public class DiceRollerActivity extends AppCompatActivity {
 
             }
             tvTotal.setText("Total: " + accumulator);
-        }else{
-            Log.i("ES NULO", "ES NULO");
         }
     }
 
     private void addDice(){
-        Log.i(String.valueOf(ivDice1.getVisibility()), String.valueOf(View.GONE));
         if(ivDice1.getVisibility() == View.GONE){
             numberDice = 1;
             tvNumberDice.setText("Dice: " +numberDice);
