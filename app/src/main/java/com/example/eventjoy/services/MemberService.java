@@ -40,9 +40,6 @@ public class MemberService {
         databaseReferenceUserGroups = FirebaseDatabase.getInstance().getReference().child("userGroups");
     }
 
-
-
-    // Constructor para pruebas: recibe las referencias
     public MemberService(DatabaseReference membersRef, DatabaseReference userEventsRef, DatabaseReference userGroupsRef) {
         this.databaseReferenceMembers = membersRef;
         this.databaseReferenceUserEvents = userEventsRef;

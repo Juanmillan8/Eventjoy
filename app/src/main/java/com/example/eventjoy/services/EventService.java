@@ -53,6 +53,11 @@ public class EventService {
         databaseReferenceUserEvent = FirebaseDatabase.getInstance().getReference().child("userEvents");
     }
 
+    public EventService(FirebaseDatabase firebaseDatabase) {
+        databaseReferenceUserEvent = firebaseDatabase.getReference().child("userEvents");
+        databaseReferenceEvent = firebaseDatabase.getReference().child("events");
+    }
+
     public void deleteEvent(Event e) {
         databaseReferenceEvent.child(e.getId()).removeValue();
     }

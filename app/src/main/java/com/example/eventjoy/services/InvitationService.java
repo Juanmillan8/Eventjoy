@@ -34,6 +34,11 @@ public class InvitationService {
         databaseReferenceInvitation = FirebaseDatabase.getInstance().getReference().child("invitations");
     }
 
+    public InvitationService(FirebaseDatabase firebaseDatabase) {
+        databaseReferenceInvitation = firebaseDatabase.getReference().child("invitations");
+
+    }
+
     public void deleteInvitation(Invitation invitation) {
         databaseReferenceInvitation.child(invitation.getId()).removeValue();
     }

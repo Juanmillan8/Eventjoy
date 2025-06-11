@@ -30,6 +30,10 @@ public class ReportService {
         databaseReferenceReports = FirebaseDatabase.getInstance().getReference().child("reports");
     }
 
+    public ReportService(FirebaseDatabase firebaseDatabase) {
+        databaseReferenceReports = firebaseDatabase.getReference().child("reports");
+    }
+
     public void updateReport(Report r) {
         databaseReferenceReports.child(r.getId()).setValue(r);
     }

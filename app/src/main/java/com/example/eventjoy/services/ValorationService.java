@@ -31,6 +31,10 @@ public class ValorationService {
         databaseReferenceValorations = FirebaseDatabase.getInstance().getReference().child("valorations");
     }
 
+    public ValorationService(FirebaseDatabase firebaseDatabase) {
+        databaseReferenceValorations = firebaseDatabase.getReference().child("valorations");
+    }
+
     public String insertValoration(Valoration v) {
         DatabaseReference newReference = databaseReferenceValorations.push();
         v.setId(newReference.getKey());

@@ -27,6 +27,10 @@ public class AdminService {
         databaseReferenceAdmins = FirebaseDatabase.getInstance().getReference().child("admins");
     }
 
+    public AdminService(FirebaseDatabase firebaseDatabase) {
+        databaseReferenceAdmins = firebaseDatabase.getReference().child("admins");
+    }
+
     public void getAdminById(String adminId, ValueEventListener listener) {
         Query query = databaseReferenceAdmins.orderByChild("id").equalTo(adminId);
         query.addListenerForSingleValueEvent(listener);

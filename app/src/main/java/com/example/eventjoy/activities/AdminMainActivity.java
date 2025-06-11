@@ -38,7 +38,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class AdminMainActivity extends AppCompatActivity {
-    //TODO CONTROLAR LOS TOAST PARA QUE SE ME MUESTREN BIEN Y NO SE MUESTREN CORTADO
+
     private AppBarConfiguration mAppBarConfiguration;
     private ActivityAdminMainBinding binding;
     private NavigationView navigationView;
