@@ -56,7 +56,7 @@ public class ModifyGroupActivity extends AppCompatActivity {
     private AutoCompleteTextView autoCompleteGroupType;
     private ImageView iconGroup, btnDeleteImage, btnCamera;
     private Button btnSaveChanges;
-    private Boolean changedImage;
+    private Boolean changedImage, defaultIcon;
     private ProgressDialogFragment progressDialog;
     private static final int PICK_IMAGE_REQUEST = 0;
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
@@ -108,6 +108,7 @@ public class ModifyGroupActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 changedImage = false;
+                defaultIcon = false;
                 iconGroup.setImageResource(R.drawable.default_profile_photo);
             }
         });
@@ -117,6 +118,7 @@ public class ModifyGroupActivity extends AppCompatActivity {
                 if (mImageUri != null) {
                     Picasso.get().load(mImageUri).into(iconGroup);
                     changedImage = true;
+                    defaultIcon = false;
                 } else {
                     Toast.makeText(this, "Error getting image", Toast.LENGTH_SHORT).show();
                 }
@@ -134,6 +136,7 @@ public class ModifyGroupActivity extends AppCompatActivity {
                     mImageUri = data.getData();
                     iconGroup.setImageURI(mImageUri);
                     changedImage = true;
+                    defaultIcon = false;
                 }
             }
         }
@@ -165,7 +168,12 @@ public class ModifyGroupActivity extends AppCompatActivity {
             if (changedImage) {
                 saveIconGroup(group);
             } else {
-                modifyGroup(group);
+                if (defaultIcon) {
+                    modifyGroup(group);
+                } else {
+                    group.setIcon(null);
+                    modifyGroup(group);
+                }
             }
         }
     }
@@ -201,7 +209,7 @@ public class ModifyGroupActivity extends AppCompatActivity {
 
     private void modifyGroup(Group g) {
         groupService.updateGroup(g);
-        Toast.makeText(getApplicationContext(), "Successfully modified group",Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), "Successfully modified group", Toast.LENGTH_SHORT).show();
         progressDialog.dismiss();
         Intent detailsGroupIntent = new Intent(this, DetailsGroupActivity.class);
         detailsGroupIntent.putExtra("group", group);
@@ -265,12 +273,13 @@ public class ModifyGroupActivity extends AppCompatActivity {
         return true;
     }
 
-    private void loadServices(){
+    private void loadServices() {
         groupService = new GroupService(getApplicationContext());
     }
 
-    private void loadComponents(){
-        changedImage=false;
+    private void loadComponents() {
+        changedImage = false;
+        defaultIcon = false;
         btnSaveChanges = findViewById(R.id.btnSaveChanges);
         btnDeleteImage = findViewById(R.id.btnDeleteImage);
         btnCamera = findViewById(R.id.btnCamera);
@@ -294,13 +303,13 @@ public class ModifyGroupActivity extends AppCompatActivity {
         textInputEditTextGroupDescription.setText(group.getDescription());
 
         if (group.getIcon() != null && !group.getIcon().isEmpty()) {
-            changedImage=true;
+            defaultIcon = true;
             Picasso.get().load(group.getIcon()).into(iconGroup);
         }
 
-        if(group.getVisibility().name().equals("PUBLIC")){
+        if (group.getVisibility().name().equals("PUBLIC")) {
             autoCompleteGroupType.setText("Public", false);
-        }else{
+        } else {
             autoCompleteGroupType.setText("Private", false);
         }
 
