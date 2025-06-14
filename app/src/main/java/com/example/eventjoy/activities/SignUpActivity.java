@@ -381,8 +381,8 @@ public class SignUpActivity extends AppCompatActivity {
 
     private void insertMember(Member m) {
         m.setUserAccountId(mAuth.getCurrentUser().getUid());
-        String idMember = memberService.insertMember(m);
-
+        m.setId(mAuth.getCurrentUser().getUid());
+        memberService.insertMember(m);
         editor.putString("email", textInputEditTextEmail.getText().toString());
         editor.putString("role", Role.MEMBER.name());
         editor.putString("id", mAuth.getCurrentUser().getUid());

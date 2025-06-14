@@ -344,14 +344,6 @@ public class EventDetailsActivity extends AppCompatActivity {
 
         tvTitle.setText(event.getTitle());
 
-        if (event.getStatus().name().equals("FINISHED")) {
-
-        } else if (event.getStatus().name().equals("ONGOING")) {
-
-        } else {
-
-        }
-
 
         String startDateTimeString = startDateTime.format(formatterDateTime);
         String endDateTimeString = endDateTime.format(formatterDateTime);

@@ -172,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
                     Member m = snapshot.getChildren().iterator().next().getValue(Member.class);
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putString("email", email);
-                    editor.putString("role", Role.MEMBER.name());
+                    editor.putString("role", m.getRole().name());
                     editor.putString("id", m.getId());
                     editor.apply();
 
@@ -180,38 +180,13 @@ public class MainActivity extends AppCompatActivity {
                         m.setProvider(Provider.GOOGLE);
                         memberService.updateMember(m);
                     }
-                    Intent memberMainIntent = new Intent(getApplicationContext(), MemberMainActivity.class);
-                    startActivity(memberMainIntent);
-                }else{
-                    adminService.getAdminByUid(uid, new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            if (snapshot.exists()) {
-                                Admin a = snapshot.getChildren().iterator().next().getValue(Admin.class);
-                                SharedPreferences.Editor editor = sharedPreferences.edit();
-                                editor.putString("email", email);
-                                editor.putString("role", Role.ADMIN.name());
-                                editor.putString("id", a.getId());
-                                editor.apply();
-
-                                if (a.getProvider().equals(Provider.EMAIL) && provider.equals(Provider.GOOGLE)) {
-                                    a.setProvider(Provider.GOOGLE);
-                                    adminService.updateAdmin(a);
-                                }
-                                Intent adminMainIntent = new Intent(getApplicationContext(), AdminMainActivity.class);
-                                startActivity(adminMainIntent);
-                            }else{
-                                Toast.makeText(getApplicationContext(), "Signed in with Google. Finish registration to use the app.", Toast.LENGTH_SHORT).show();
-                                Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
-                                startActivity(intent);
-                            }
-                        }
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-                            Log.e("Error - MainActivity - getAdminByUid", error.getMessage());
-                            Toast.makeText(getApplicationContext(), "Error querying database", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                    if(m.getRole().name().equals("ADMIN")){
+                        Intent adminMainIntent = new Intent(getApplicationContext(), AdminMainActivity.class);
+                        startActivity(adminMainIntent);
+                    }else{
+                        Intent memberMainIntent = new Intent(getApplicationContext(), MemberMainActivity.class);
+                        startActivity(memberMainIntent);
+                    }
                 }
             }
 

@@ -47,9 +47,7 @@ public class MemberService {
     }
 
     public String insertMember(Member m) {
-        DatabaseReference newReference = databaseReferenceMembers.push();
-        m.setId(m.getUserAccountId());
-
+        DatabaseReference newReference = databaseReferenceMembers.child(m.getId());
         newReference.setValue(m);
         return m.getId();
     }
