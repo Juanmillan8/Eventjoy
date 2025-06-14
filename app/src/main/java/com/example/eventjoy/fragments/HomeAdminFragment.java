@@ -40,19 +40,16 @@ public class HomeAdminFragment extends Fragment {
 
         return rootView;
     }
-
     @Override
     public void onStop() {
         super.onStop();
         reportService.stopListening();
     }
-
     @Override
     public void onStart() {
         super.onStart();
         startListeningReports();
     }
-
     private void startListeningReports() {
         reportService.stopListening();
         reportService.getPendingReports(new ReportsCallback() {

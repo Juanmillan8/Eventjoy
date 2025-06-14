@@ -385,7 +385,7 @@ public class SignUpActivity extends AppCompatActivity {
 
         editor.putString("email", textInputEditTextEmail.getText().toString());
         editor.putString("role", Role.MEMBER.name());
-        editor.putString("id", idMember);
+        editor.putString("id", mAuth.getCurrentUser().getUid());
         editor.apply();
 
         if (changedImage) {
