@@ -16,9 +16,7 @@ import com.example.eventjoy.R;
 import com.example.eventjoy.databinding.ActivityAdminMainBinding;
 import com.example.eventjoy.databinding.ActivityMemberMainBinding;
 import com.example.eventjoy.fragments.ProgressDialogFragment;
-import com.example.eventjoy.models.Admin;
 import com.example.eventjoy.models.Member;
-import com.example.eventjoy.services.AdminService;
 import com.example.eventjoy.services.MemberService;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
@@ -48,9 +46,9 @@ public class AdminMainActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
     private TextView tvName, tvEmail;
     private ImageView profileIcon;
-    private AdminService adminService;
-    private Admin admin;
+    private Member admin;
     private SharedPreferences.Editor editor;
+    private MemberService memberService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,10 +96,10 @@ public class AdminMainActivity extends AppCompatActivity {
         tvName = navigationView.getHeaderView(0).findViewById(R.id.tvName);
         tvEmail = navigationView.getHeaderView(0).findViewById(R.id.tvEmail);
         profileIcon = navigationView.getHeaderView(0).findViewById(R.id.profileIcon);
-        adminService.getAdminById(sharedPreferences.getString("id", ""), new ValueEventListener() {
+        memberService.getMemberById(sharedPreferences.getString("id", ""), new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                admin = dataSnapshot.getChildren().iterator().next().getValue(Admin.class);
+                admin = dataSnapshot.getChildren().iterator().next().getValue(Member.class);
                 tvName.setText("Hello, " + admin.getName());
                 tvEmail.setText(user.getEmail());
                 if (admin.getPhoto() != null && !admin.getPhoto().isEmpty()) {
@@ -119,7 +117,7 @@ public class AdminMainActivity extends AppCompatActivity {
     }
 
     private void loadServices() {
-        adminService = new AdminService(getApplicationContext());
+        memberService = new MemberService(getApplicationContext());
     }
 
     @Override

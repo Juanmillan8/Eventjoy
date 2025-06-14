@@ -19,9 +19,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.eventjoy.R;
 import com.example.eventjoy.enums.Provider;
 import com.example.eventjoy.enums.Role;
-import com.example.eventjoy.models.Admin;
 import com.example.eventjoy.models.Member;
-import com.example.eventjoy.services.AdminService;
 import com.example.eventjoy.services.MemberService;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -60,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
     private GoogleSignInClient googleSignInClient;
     private GoogleSignInOptions googleSignInOptions;
     private String role;
-    private AdminService adminService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -257,7 +254,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadServices(){
         memberService = new MemberService(getApplicationContext());
-        adminService = new AdminService(getApplicationContext());
     }
 
 }

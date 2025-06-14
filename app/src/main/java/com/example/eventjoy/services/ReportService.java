@@ -7,7 +7,6 @@ import androidx.annotation.NonNull;
 
 import com.example.eventjoy.callbacks.MembersCallback;
 import com.example.eventjoy.callbacks.ReportsCallback;
-import com.example.eventjoy.models.Admin;
 import com.example.eventjoy.models.Member;
 import com.example.eventjoy.models.Report;
 import com.example.eventjoy.models.UserEvent;
