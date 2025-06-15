@@ -111,7 +111,7 @@ public class PopupJoinGroup extends AppCompatActivity {
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             getWindow().setLayout((int) (width * 0.90), (int) (tall * 0.50));
         } else if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-
+            getWindow().setLayout((int) (width * 0.70), (int) (tall * 0.89));
         }
         getWindow().setBackgroundDrawableResource(R.drawable.rounded_corners);
     }

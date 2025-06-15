@@ -137,7 +137,7 @@ public class PopupReauthenticateActivity extends AppCompatActivity {
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
             getWindow().setLayout((int) (width * 0.95), (int) (tall * 0.45));
         }else if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
-            getWindow().setLayout((int) (width * 0.60), (int) (tall * 0.78));
+            getWindow().setLayout((int) (width * 0.60), (int) (tall * 0.90));
         }
         getWindow().setBackgroundDrawableResource(R.drawable.rounded_corners);
     }

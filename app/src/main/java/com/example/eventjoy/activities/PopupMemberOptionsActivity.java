@@ -194,7 +194,30 @@ public class PopupMemberOptionsActivity extends AppCompatActivity {
             }
 
         } else if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            getWindow().setLayout((int) (width * 0.50), (int) (tall * 0.20));
+            if (role.equals("ADMIN")) {
+                getWindow().setLayout((int) (width * 0.70), (int) (tall * 0.43));
+                tvExpelMember.setVisibility(View.VISIBLE);
+                tvAssignRemoveAdmin.setVisibility(View.VISIBLE);
+
+                userGroupService.checkUserGroupRole(group.getId(), member.getId(), new UserGroupRoleCallback() {
+                    @Override
+                    public void onSuccess(UserGroupRole u) {
+                        if (u.name().equals("ADMIN")) {
+                            tvAssignRemoveAdmin.setText("Remove administrator");
+                        } else {
+                            tvAssignRemoveAdmin.setText("Assign administrator");
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(String onCancelledMessage) {
+                        Toast.makeText(getApplicationContext(), "Error querying database", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+            } else {
+                getWindow().setLayout((int) (width * 0.70), (int) (tall * 0.30));
+            }
         }
         getWindow().setBackgroundDrawableResource(R.drawable.rounded_corners);
     }

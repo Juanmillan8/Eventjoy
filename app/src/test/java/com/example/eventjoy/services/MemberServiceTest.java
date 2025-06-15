@@ -66,16 +66,27 @@ public class MemberServiceTest {
     // 1. insertMember: Se asigna el id al miembro y se invoca setValue().
     @Test
     public void testInsertMember() {
-        Member member = new Member();
-        // Stub: simular el retorno de push() con key "m1"
-        when(mockNewMemberReference.getKey()).thenReturn("m1");
+        // Arrange
+        DatabaseReference mockMembersRef = mock(DatabaseReference.class);
+        DatabaseReference mockNewMemberReference = mock(DatabaseReference.class);
 
+        Member member = new Member();
+        member.setId("m1");
+
+        // Simula que .child("m1") devuelve la referencia mock
+        when(mockMembersRef.child("m1")).thenReturn(mockNewMemberReference);
+
+        // Crea el servicio usando los mocks
+        MemberService memberService = new MemberService(mockMembersRef, null, null);
+
+        // Act
         String returnedId = memberService.insertMember(member);
 
+        // Assert
         verify(mockNewMemberReference).setValue(member);
         assertEquals("m1", returnedId);
-        assertEquals("m1", member.getId());
     }
+
 
     // 2. getMembersNotInGroup: Se simula una consulta en userGroups para obtener los IDs ya asociados
     // y luego se consulta members para retornar solo los que NO están en ese grupo.

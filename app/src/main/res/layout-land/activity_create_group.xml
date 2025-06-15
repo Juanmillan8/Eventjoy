@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.CreateReportsActivity">
+    tools:context=".activities.CreateGroupActivity">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbarActivity"
@@ -16,7 +16,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:title="Report user"
+        app:title="Create group"
         app:titleTextColor="@color/white" />
 
     <ScrollView
@@ -37,6 +37,99 @@
         app:layout_constraintTop_toBottomOf="@+id/toolbarActivity"
         tools:layout_editor_absoluteX="1dp">
 
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/iconGroup"
+                android:layout_margin="5dp"
+                android:layout_width="130dp"
+                android:layout_height="130dp"
+                android:layout_gravity="center"
+                android:scaleType="centerCrop"
+                android:elevation="10dp"
+                app:shapeAppearanceOverlay="@style/roundedImageViewRounded"
+                app:srcCompat="@drawable/default_profile_photo" />
+
+            <ImageButton
+                android:id="@+id/btnDeleteImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center|bottom|right"
+                android:layout_margin="5dp"
+                android:background="@android:color/transparent"
+                android:elevation="10dp"
+                android:contentDescription="Delete profile image"
+                app:srcCompat="@drawable/trash_icon" />
+
+            <ImageButton
+                android:id="@+id/btnCamera"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center|bottom|left"
+                android:background="@android:color/transparent"
+                android:elevation="10dp"
+                app:srcCompat="@drawable/camera_icon" />
+        </FrameLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="350dp"
+            android:layout_marginTop="20dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textColorHint="#828080"
+            app:boxBackgroundColor="#F0F0F0"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxStrokeColor="@color/darkGreen"
+            app:endIconMode="clear_text"
+            app:endIconTint="@color/darkGreen"
+            app:hintEnabled="false"
+            app:helperText="required"
+            app:hintTextColor="@color/black">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/textInputEditTextGroupTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Enter the group title"
+                android:inputType="text"
+                android:textColor="@color/black" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="350dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textColorHint="#828080"
+            app:boxBackgroundColor="#F0F0F0"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxStrokeColor="@color/darkGreen"
+            app:endIconMode="clear_text"
+            app:endIconTint="@color/darkGreen"
+            app:hintEnabled="false"
+            app:helperText=" "
+            android:layout_marginTop="20dp"
+            app:hintTextColor="@color/black">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/textInputEditTextGroupDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Enter the group description"
+                android:inputType="text"
+                android:textColor="@color/black" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/dropdownGroupTypeLayout"
             android:layout_width="350dp"
@@ -55,10 +148,10 @@
             app:hintEnabled="false">
 
             <AutoCompleteTextView
-                android:id="@+id/autoCompleteReportReason"
+                android:id="@+id/autoCompleteGroupType"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Select the report reason"
+                android:hint="Select group type"
                 android:inputType="none"
                 android:padding="16dp"
                 android:textColor="@color/black"
@@ -66,34 +159,6 @@
                 android:textSize="16sp"
                 app:background="@drawable/dropdown_menu_background"
                 android:dropDownVerticalOffset="8dp"/>
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="350dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:textColorHint="#828080"
-            app:boxBackgroundColor="#F0F0F0"
-            app:boxCornerRadiusBottomEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp"
-            android:layout_marginTop="10dp"
-            app:boxStrokeColor="@color/darkGreen"
-            app:endIconMode="clear_text"
-            app:endIconTint="@color/darkGreen"
-            app:hintEnabled="false"
-            app:hintTextColor="@color/black">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/textInputEditTextDescription"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Enter a description"
-                android:inputType="textMultiLine"
-                android:minLines="5"
-                android:gravity="top|start"
-                android:textColor="@color/black" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <LinearLayout
@@ -105,20 +170,22 @@
             android:orientation="vertical">
 
             <Button
-                android:id="@+id/btnCreateReport"
+                android:id="@+id/btnCreateGroup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="40dp"
                 android:layout_marginRight="40dp"
                 android:layout_marginTop="20dp"
                 android:padding="10dp"
-                android:text="Create report"
+                android:text="Create group"
                 android:textSize="20sp"
                 android:textColor="@color/grayBluish"
                 android:backgroundTint="@color/mediumGreen"
                 />
         </LinearLayout>
+
     </LinearLayout>
     </ScrollView>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
