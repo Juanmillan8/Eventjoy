@@ -231,7 +231,6 @@ public class EditEventActivity extends AppCompatActivity {
         textInputEditTextMunicipality.setText(eventEdit.getAddress().getMunicipality());
 
         ZonedDateTime zonedDateTime = ZonedDateTime.parse(eventEdit.getStartDateAndTime(), inputFormatter);
-
         textInputEditTextStartDateAndTime.setText(outputFormatter.format(zonedDateTime));
 
     }

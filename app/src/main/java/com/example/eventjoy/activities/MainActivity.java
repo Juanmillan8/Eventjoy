@@ -184,6 +184,10 @@ public class MainActivity extends AppCompatActivity {
                         Intent memberMainIntent = new Intent(getApplicationContext(), MemberMainActivity.class);
                         startActivity(memberMainIntent);
                     }
+                }else{
+                    Toast.makeText(getApplicationContext(), "Signed in with Google. Finish registration to use the app.", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
+                    startActivity(intent);
                 }
             }
 

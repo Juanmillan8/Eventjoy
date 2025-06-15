@@ -76,7 +76,7 @@ public class InvitationAdapter extends ArrayAdapter<Invitation> {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         Member member = snapshot.getChildren().iterator().next().getValue(Member.class);
-
+                        Log.i("MEMBER LLENO", member.toString());
                         tvInviterUsername.setText("Invited by: " + member.getUsername());
                     }
 
